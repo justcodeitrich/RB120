@@ -23,9 +23,9 @@ class Move
   end
 
   def <(other_move)
-    if rock? && other_move.paper? ||
-      paper? && other_move.scissors? || 
-      scissors? && other_move.rock? 
+    rock? && other_move.paper? ||
+      paper? && other_move.scissors? ||
+      scissors? && other_move.rock?
   end
 
   def to_s
@@ -34,15 +34,17 @@ class Move
 end
 
 class Player
-  attr_accessor :move, :name
+  attr_accessor :move, :name, :points
 
   def initialize
+    @points = 0
     set_name
   end
 end
 
 class Human < Player
   def set_name
+    system("clear")
     n = ""
     loop do
       puts "What is your name?"
@@ -84,24 +86,45 @@ class RPSGame
   end
 
   def display_welcome_message
+    system("clear")
     puts "Welcome to Rock, Paper, Scissors!"
+    sleep(1.5)
+    puts "First to 10 points wins!"
   end
 
   def display_goodbye_message
     puts "Thanks for playing!"
   end
 
+  def human_wins
+    puts "#{human.name} won!"
+    human.points += 1
+  end
+
+  def computer_wins
+    puts "#{computer.name} won!"
+    computer.points += 1
+  end
+
   def display_winner
     puts "#{human.name} chose #{human.move}."
     puts "#{computer.name} chose #{computer.move}."
-
     if human.move > computer.move
-      puts "#{human.move} won!"
+      human_wins
     elsif human.move < computer.move
-      puts "#{computer.name} won!"
+      computer_wins
     else
       puts "It's a tie!"
     end
+  end
+
+  def display_points
+    puts "#{human.name}:#{human.points} | #{computer.name}:#{computer.points}"
+  end
+
+  def reset_points
+    human.points = 0
+    computer.points = 0
   end
 
   def play_again?
@@ -112,7 +135,11 @@ class RPSGame
       break if ['y', 'n'].include? answer.downcase
       puts "Sorry, must y or n."
     end
-    answer == 'y'
+    reset_points if answer == 'y'
+  end
+
+  def point_check
+    human.points.eql?(10) || computer.points.eql?(10)
   end
 
   def play
@@ -120,11 +147,30 @@ class RPSGame
     loop do
       human.choose
       computer.choose
+      display_choices
       display_winner
-      break unless play_again?
+      display_points
+      if point_check
+        break unless play_again?
+      end
     end
     display_goodbye_message
   end
 end
 
 RPSGame.new.play
+
+=begin
+problem: adding a score system
+ done - prompting message the first to 10 points wins to player
+ done - incrementing the score for each game depending on who wins
+ done - displaying score count at end of each round
+ done - exiting when first to score 10 points wins (checking for 10 on each round)
+ done - reset score to 0 if player wants to play again
+
+- instead of a new class - build on top of the play loop
+
+Write a description of the problem and extract major nouns and verbs.
+Make an initial guess at organizing the verbs and nouns into methods and classes/modules, then do a spike to explore the problem with temporary code.
+When you have a better idea of the problem, model your thoughts into CRC cards.
+=end
