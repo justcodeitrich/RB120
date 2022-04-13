@@ -37,13 +37,40 @@ class Move
       (paper? && other_move.scissors? || other_move.lizard?) ||
       (scissors? && other_move.rock? || other_move.spock?) || 
       (spock? && other_move.lizard? || other_move.paper?) ||
-      (lizard? && other_move.rock? || other_move.scissors)
+      (lizard? && other_move.rock? || other_move.scissors?)
   end
 
   def to_s
     @value
   end
+end
 
+class Rock < Move 
+  def initialize
+    super("rock")
+  end
+end
+
+class Paper < Move
+  def initialize
+    super("paper")
+  end
+end 
+
+class Scissors < Move 
+  def initialize
+    super("scissors")
+  end
+end 
+class Lizard < Move
+  def initialize
+    super("lizard")
+  end
+end 
+class Spock < Move 
+  def initialize
+    super("spock")
+  end
 end
 
 class Player
@@ -67,6 +94,16 @@ class Human < Player
     self.name = n
   end
 
+  def choice_to_new_obj(choice)
+    case choice  
+    when "rock" then Rock.new 
+    when "paper" then Paper.new 
+    when "scissors" then Scissors.new 
+    when "spock" then Spock.new 
+    when "lizard" then Lizard.new
+    end
+  end
+
   def choose
     choice = nil
     loop do
@@ -75,13 +112,13 @@ class Human < Player
       break if Move::VALUES.include? choice
       puts "Sorry, invalid choice"
     end
-    self.move = Move.new(choice)
+    self.move = choice_to_new_obj(choice) 
   end
 end
 
 class Computer < Player
   def set_name
-    self.name = ['R2D2', 'CHAPPIER'].sample
+    self.name = ['R2D2', 'CHAPPIER', 'WALL-E', 'The Iron Giant'].sample
   end
 
   def choose
@@ -176,13 +213,7 @@ end
 RPSGame.new.play
 
 =begin
-problem: adding lizard and spock
-scissors - beats paper and lizard
-paper - beats rock and spock
-rock - beats lizard and scissors
-lizard - beats paper and spock 
-spock - beats rock and scissors
+problem: add a class for each move
+- 5 classes - inherit from Move superclass
 
-- change display prompt asking to pick an option
-- add lizard and spock to the > and < 
 =end
