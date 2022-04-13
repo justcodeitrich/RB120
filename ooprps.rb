@@ -31,6 +31,7 @@ class Move
   def to_s
     @value
   end
+
 end
 
 class Player
@@ -76,14 +77,7 @@ class Computer < Player
   end
 end
 
-class RPSGame
-  attr_accessor :human, :computer
-
-  def initialize
-    @human = Human.new
-    @computer = Computer.new
-  end
-
+module Displayable 
   def display_welcome_message
     system("clear")
     puts "Welcome to Rock, Paper, Scissors!"
@@ -95,12 +89,12 @@ class RPSGame
     puts "Thanks for playing!"
   end
 
-  def human_wins
+  def display_human_wins
     puts "#{human.name} won!"
     human.points += 1
   end
 
-  def computer_wins
+  def display_computer_wins
     puts "#{computer.name} won!"
     computer.points += 1
   end
@@ -108,10 +102,11 @@ class RPSGame
   def display_winner
     puts "#{human.name} chose #{human.move}."
     puts "#{computer.name} chose #{computer.move}."
+    
     if human.move > computer.move
-      human_wins
+      display_human_wins
     elsif human.move < computer.move
-      computer_wins
+      display_computer_wins
     else
       puts "It's a tie!"
     end
@@ -119,6 +114,16 @@ class RPSGame
 
   def display_points
     puts "#{human.name}:#{human.points} | #{computer.name}:#{computer.points}"
+  end
+end
+
+class RPSGame
+  include Displayable
+  attr_accessor :human, :computer
+
+  def initialize
+    @human = Human.new
+    @computer = Computer.new
   end
 
   def reset_points
