@@ -35,7 +35,6 @@ end
 
 class Player
   attr_accessor :move, :name, :points
-
   def initialize
     @points = 0
     set_name
@@ -147,7 +146,6 @@ class RPSGame
     loop do
       human.choose
       computer.choose
-      display_choices
       display_winner
       display_points
       if point_check
