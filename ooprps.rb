@@ -1,5 +1,5 @@
 class Move
-  VALUES = ['rock', 'paper', 'scissors']
+  VALUES = ['rock', 'paper', 'scissors','spock','lizard']
   def initialize(value)
     @value = value
   end
@@ -16,16 +16,28 @@ class Move
     @value == 'paper'
   end
 
+  def spock?
+    @value == 'spock'
+  end
+
+  def lizard?
+    @value == "lizard"
+  end
+
   def >(other_move)
-    rock? && other_move.scissors? ||
-      paper? && other_move.rock? ||
-      scissors? && other_move.paper?
+    (rock? && other_move.scissors? || other_move.lizard?) ||
+      (paper? && other_move.rock? || other_move.spock?) ||
+      (scissors? && other_move.paper? || other_move.lizard?) || 
+      (spock? && other_move.rock? || other_move.scissors?) || 
+      (lizard? && other_move.paper? || other_move.spock?)
   end
 
   def <(other_move)
-    rock? && other_move.paper? ||
-      paper? && other_move.scissors? ||
-      scissors? && other_move.rock?
+    (rock? && other_move.paper? || other_move.spock?) ||
+      (paper? && other_move.scissors? || other_move.lizard?) ||
+      (scissors? && other_move.rock? || other_move.spock?) || 
+      (spock? && other_move.lizard? || other_move.paper?) ||
+      (lizard? && other_move.rock? || other_move.scissors)
   end
 
   def to_s
@@ -58,7 +70,7 @@ class Human < Player
   def choose
     choice = nil
     loop do
-      puts "Please choose rock, paper, or scissors:"
+      puts "Please choose rock, paper, scissors, spock, or lizard:"
       choice = gets.chomp
       break if Move::VALUES.include? choice
       puts "Sorry, invalid choice"
@@ -80,8 +92,8 @@ end
 module Displayable 
   def display_welcome_message
     system("clear")
-    puts "Welcome to Rock, Paper, Scissors!"
-    sleep(1.5)
+    puts "Welcome to Rock, Paper, Scissors, Spock, Lizard!"
+    sleep(1)
     puts "First to 10 points wins!"
   end
 
@@ -164,16 +176,13 @@ end
 RPSGame.new.play
 
 =begin
-problem: adding a score system
- done - prompting message the first to 10 points wins to player
- done - incrementing the score for each game depending on who wins
- done - displaying score count at end of each round
- done - exiting when first to score 10 points wins (checking for 10 on each round)
- done - reset score to 0 if player wants to play again
+problem: adding lizard and spock
+scissors - beats paper and lizard
+paper - beats rock and spock
+rock - beats lizard and scissors
+lizard - beats paper and spock 
+spock - beats rock and scissors
 
-- instead of a new class - build on top of the play loop
-
-Write a description of the problem and extract major nouns and verbs.
-Make an initial guess at organizing the verbs and nouns into methods and classes/modules, then do a spike to explore the problem with temporary code.
-When you have a better idea of the problem, model your thoughts into CRC cards.
+- change display prompt asking to pick an option
+- add lizard and spock to the > and < 
 =end
