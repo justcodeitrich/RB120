@@ -1,49 +1,44 @@
 class Move
   attr_accessor :value
-  VALUES = ['rock', 'paper', 'scissors','spock','lizard']
+  VALUES = ['rock', 'paper', 'scissors', 'spock', 'lizard']
   def initialize(value)
-    @value = value
+    self.value = value
   end
 
   def scissors?
-   @value == 'scissors'
+   self.value == 'scissors'
   end
 
   def rock?
-   @value == 'rock'
+   self.value == 'rock'
   end
 
   def paper?
-   @value == 'paper'
+   self.value == 'paper'
   end
 
   def spock?
-   @value == 'spock'
+   self.value == 'spock'
   end
 
   def lizard?
-   @value == "lizard"
+   self.value == "lizard"
   end
 
-  def >(other_move) # gameplay isnt even going into > or < methods. It's using something else to return result
-    # puts "greater than used"
-    puts "self: #{self}"
-    puts "other move:#{other_move}"
-    (rock? && other_move.scissors? || other_move.lizard?) || 
-      (paper? && other_move.rock? || other_move.spock?) ||
-      (scissors? && other_move.paper? || other_move.lizard?) || 
-      (spock? && other_move.rock? || other_move.scissors?) || 
-      (lizard? && other_move.paper? || other_move.spock?)
+  def >(other_move) 
+    (rock? && (other_move.scissors? || other_move.lizard?)) || 
+      (paper? && (other_move.rock? || other_move.spock?)) ||
+      (scissors? && (other_move.paper? || other_move.lizard?)) || 
+      (spock? && (other_move.rock? || other_move.scissors?)) || 
+      (lizard? && (other_move.paper? || other_move.spock?))
   end
 
   def <(other_move)
-    puts "self: #{self}"
-    puts "other move:#{other_move}"
-    (rock? && other_move.paper? || other_move.spock?) ||
-      (paper? && other_move.scissors? || other_move.lizard?) ||
-      (scissors? && other_move.rock? || other_move.spock?) || 
-      (spock? && other_move.lizard? || other_move.paper?) ||
-      (lizard? && other_move.rock? || other_move.scissors?)
+    (rock? && (other_move.paper? || other_move.spock?)) ||
+      (paper? && (other_move.scissors? || other_move.lizard?)) ||
+      (scissors? && (other_move.rock? || other_move.spock?)) || 
+      (spock? && (other_move.lizard? || other_move.paper?)) ||
+      (lizard? && (other_move.rock? || other_move.scissors?))
   end
 
   def to_s
@@ -132,7 +127,7 @@ class Computer < Player
 
   def choose
     choice = Move::VALUES.sample
-    self.move = choice_to_new_obj(choice).value
+    self.move = choice_to_new_obj(choice)
     self.move_history << choice
   end
 end
@@ -141,7 +136,7 @@ module Displayable
   def display_welcome_message
     # system("clear")
     puts "Welcome to Rock, Paper, Scissors, Spock, Lizard!"
-    sleep(1)
+    # sleep(1)
     puts "First to 10 points wins!"
   end
 
@@ -151,14 +146,14 @@ module Displayable
 
   def display_human_wins
     puts "#{human.name} won!"
-    sleep(1.5)
+    # sleep(1.5)
     human.points += 1
     # system("clear")
   end
 
   def display_computer_wins
     puts "#{computer.name} won!"
-    sleep(1.5)
+    # sleep(1.5)
     computer.points += 1
     # system("clear")
   end
@@ -170,24 +165,18 @@ module Displayable
 
   def display_tie 
     puts "It's a tie!"
-    sleep(1.5)
+    # sleep(1.5)
     # system("clear")
   end
 
   def display_winner
     puts "#{human.name} chose #{human.move}."
-    sleep(1)
+    # sleep(1)
     puts "#{computer.name} chose #{computer.move}."
-    sleep(1)
-    p (human.move > computer.move)
-    p (human.move < computer.move)
+    # sleep(1)
     if human.move > computer.move
-      p human.move 
-      p computer.move 
       display_human_wins
     elsif human.move < computer.move
-      p human.move 
-      p computer.move 
       display_computer_wins
     else
       display_tie
@@ -208,9 +197,11 @@ class RPSGame
     @computer = Computer.new
   end
 
-  def reset_points
+  def reset_game
     human.points = 0
     computer.points = 0
+    human.move_history = []
+    computer.move_history = []
   end
 
   def play_again?
@@ -221,7 +212,7 @@ class RPSGame
       break if ['y', 'n'].include? answer.downcase
       puts "Sorry, must y or n."
     end
-    reset_points if answer == 'y'
+    reset_game if answer == 'y'
   end
 
   def point_check
