@@ -124,9 +124,17 @@ class Computer < Player
   def set_name
     self.name = ['R2D2', 'CHAPPIER', 'WALL-E', 'The Iron Giant'].sample
   end
-
+  def computer_personalities
+    case self.name 
+    when 'R2D2' then ['rock','rock','rock','paper','spock'].sample
+    when 'CHAPPIER' then ['lizard','lizard','rock','paper','spock'].sample
+    when 'WALL-E' then 'scissors'
+    when 'The Iron Giant' then ['rock','paper','scissors','lizard','spock'].sample
+    end
+  end
+  
   def choose
-    choice = Move::VALUES.sample
+    choice = computer_personalities
     self.move = choice_to_new_obj(choice)
     self.move_history << choice
   end
@@ -202,6 +210,7 @@ class RPSGame
     computer.points = 0
     human.move_history = []
     computer.move_history = []
+    computer.name = ['R2D2', 'CHAPPIER', 'WALL-E', 'The Iron Giant'].sample
   end
 
   def play_again?
