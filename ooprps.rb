@@ -27,19 +27,59 @@ class Move
   end
 
   def >(other_move)
-    (rock? && (other_move.scissors? || other_move.lizard?)) ||
-      (paper? && (other_move.rock? || other_move.spock?)) ||
-      (scissors? && (other_move.paper? || other_move.lizard?)) ||
-      (spock? && (other_move.rock? || other_move.scissors?)) ||
-      (lizard? && (other_move.paper? || other_move.spock?))
+    rock_wins?(other_move) ||
+      paper_wins?(other_move) ||
+      scissors_wins?(other_move) ||
+      spock_wins?(other_move) ||
+      lizard_wins?(other_move)
+  end
+
+  def rock_wins?(other_move)
+    (rock? && (other_move.scissors? || other_move.lizard?))
+  end
+
+  def paper_wins?(other_move)
+    (paper? && (other_move.rock? || other_move.spock?))
+  end
+
+  def scissors_wins?(other_move)
+    (scissors? && (other_move.paper? || other_move.lizard?))
+  end
+
+  def spock_wins?(other_move)
+    (spock? && (other_move.rock? || other_move.scissors?))
+  end
+
+  def lizard_wins?(other_move)
+    (lizard? && (other_move.paper? || other_move.spock?))
   end
 
   def <(other_move)
-    (rock? && (other_move.paper? || other_move.spock?)) ||
-      (paper? && (other_move.scissors? || other_move.lizard?)) ||
-      (scissors? && (other_move.rock? || other_move.spock?)) ||
-      (spock? && (other_move.lizard? || other_move.paper?)) ||
-      (lizard? && (other_move.rock? || other_move.scissors?))
+    rock_lose?(other_move) ||
+      paper_lose?(other_move) ||
+      scissors_lose?(other_move) ||
+      spock_lose?(other_move) ||
+      lizard_lose?(other_move)
+  end
+
+  def rock_lose?(other_move)
+    (rock? && (other_move.paper? || other_move.spock?))
+  end
+
+  def paper_lose?(other_move)
+    (paper? && (other_move.scissors? || other_move.lizard?))
+  end
+
+  def scissors_lose?(other_move)
+    (scissors? && (other_move.rock? || other_move.spock?))
+  end
+
+  def spock_lose?(other_move)
+    (spock? && (other_move.lizard? || other_move.paper?))
+  end
+
+  def lizard_lose?(other_move)
+    (lizard? && (other_move.rock? || other_move.scissors?))
   end
 
   def to_s
@@ -183,11 +223,13 @@ module Displayable
     # system("clear")
   end
 
-  def display_winner
+  def display_choices
     puts "#{human.name} chose #{human.move}."
-    # sleep(1)
     puts "#{comp.name} chose #{comp.move}."
-    # sleep(1)
+  end
+
+  def display_winner
+    display_choices
     if human.move > comp.move
       display_human_wins
     elsif human.move < comp.move
@@ -221,6 +263,7 @@ class RPSGame
   end
 
   def play_again?
+    return true unless point_check
     answer = nil
     loop do
       puts "Would you like to play again? (y/n)"
@@ -243,9 +286,7 @@ class RPSGame
       display_winner
       display_move_history
       display_points
-      if point_check
-        break unless play_again?
-      end
+      break unless play_again?
     end
     display_goodbye_message
   end
