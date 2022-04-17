@@ -1,3 +1,63 @@
+module Displayable
+  def display_welcome_message
+    system("clear")
+    puts "Welcome to Rock, Paper, Scissors, Spock, Lizard!"
+    sleep(1)
+    puts "First to 10 points wins!"
+  end
+
+  def display_goodbye_message
+    puts "Thanks for playing!"
+  end
+
+  def display_human_wins
+    puts "#{human.name} won!"
+    sleep(2)
+    human.points += 1
+    system("clear")
+  end
+
+  def display_comp_wins
+    puts "#{comp.name} won!"
+    sleep(2)
+    comp.points += 1
+    system("clear")
+  end
+
+  def display_move_history
+    puts "#{human.name}'s previous moves: #{human.move_history.join(', ')}"
+    puts "#{comp.name}'s previous moves: #{comp.move_history.join(', ')}"
+  end
+
+  def display_tie
+    puts "It's a tie!"
+    sleep(1.5)
+    system("clear")
+  end
+
+  def display_choices
+    puts "#{human.name} chose #{human.move}."
+    sleep(1)
+    puts "#{comp.name} chose #{comp.move}."
+    sleep(1)
+  end
+
+  def display_winner
+    display_choices
+    if human.move > comp.move
+      display_human_wins
+    elsif human.move < comp.move
+      display_comp_wins
+    else
+      display_tie
+    end
+  end
+
+  def display_points
+    puts "#{human.name}:#{human.points} | #{comp.name}:#{comp.points}"
+  end
+end
+
 class Move
   attr_accessor :value
 
@@ -139,7 +199,7 @@ end
 
 class Human < Player
   def set_name
-    # system("clear")
+    system("clear")
     n = ""
     loop do
       puts "What is your name?"
@@ -186,64 +246,6 @@ class Comp < Player
   end
 end
 
-module Displayable
-  def display_welcome_message
-    # system("clear")
-    puts "Welcome to Rock, Paper, Scissors, Spock, Lizard!"
-    # sleep(1)
-    puts "First to 10 points wins!"
-  end
-
-  def display_goodbye_message
-    puts "Thanks for playing!"
-  end
-
-  def display_human_wins
-    puts "#{human.name} won!"
-    # sleep(1.5)
-    human.points += 1
-    # system("clear")
-  end
-
-  def display_comp_wins
-    puts "#{comp.name} won!"
-    # sleep(1.5)
-    comp.points += 1
-    # system("clear")
-  end
-
-  def display_move_history
-    puts "#{human.name}'s previous moves: #{human.move_history.join(', ')}"
-    puts "#{comp.name}'s previous moves: #{comp.move_history.join(', ')}"
-  end
-
-  def display_tie
-    puts "It's a tie!"
-    # sleep(1.5)
-    # system("clear")
-  end
-
-  def display_choices
-    puts "#{human.name} chose #{human.move}."
-    puts "#{comp.name} chose #{comp.move}."
-  end
-
-  def display_winner
-    display_choices
-    if human.move > comp.move
-      display_human_wins
-    elsif human.move < comp.move
-      display_comp_wins
-    else
-      display_tie
-    end
-  end
-
-  def display_points
-    puts "#{human.name}:#{human.points} | #{comp.name}:#{comp.points}"
-  end
-end
-
 class RPSGame
   include Displayable
 
@@ -262,8 +264,17 @@ class RPSGame
     comp.name = ['R2D2', 'CHAPPIER', 'WALL-E', 'The Iron Giant'].sample
   end
 
+  def announce_winner
+    if human.points.eql?(10)
+      display_human_wins
+    else
+      display_comp_wins
+    end
+  end
+
   def play_again?
     return true unless point_check
+    announce_winner
     answer = nil
     loop do
       puts "Would you like to play again? (y/n)"
