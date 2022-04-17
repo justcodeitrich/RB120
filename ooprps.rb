@@ -1,42 +1,43 @@
 class Move
   attr_accessor :value
+
   VALUES = ['rock', 'paper', 'scissors', 'spock', 'lizard']
   def initialize(value)
     self.value = value
   end
 
   def scissors?
-   self.value == 'scissors'
+    self.value == 'scissors'
   end
 
   def rock?
-   self.value == 'rock'
+    self.value == 'rock'
   end
 
   def paper?
-   self.value == 'paper'
+    self.value == 'paper'
   end
 
   def spock?
-   self.value == 'spock'
+    self.value == 'spock'
   end
 
   def lizard?
-   self.value == "lizard"
+    self.value == "lizard"
   end
 
-  def >(other_move) 
-    (rock? && (other_move.scissors? || other_move.lizard?)) || 
+  def >(other_move)
+    (rock? && (other_move.scissors? || other_move.lizard?)) ||
       (paper? && (other_move.rock? || other_move.spock?)) ||
-      (scissors? && (other_move.paper? || other_move.lizard?)) || 
-      (spock? && (other_move.rock? || other_move.scissors?)) || 
+      (scissors? && (other_move.paper? || other_move.lizard?)) ||
+      (spock? && (other_move.rock? || other_move.scissors?)) ||
       (lizard? && (other_move.paper? || other_move.spock?))
   end
 
   def <(other_move)
     (rock? && (other_move.paper? || other_move.spock?)) ||
       (paper? && (other_move.scissors? || other_move.lizard?)) ||
-      (scissors? && (other_move.rock? || other_move.spock?)) || 
+      (scissors? && (other_move.rock? || other_move.spock?)) ||
       (spock? && (other_move.lizard? || other_move.paper?)) ||
       (lizard? && (other_move.rock? || other_move.scissors?))
   end
@@ -46,7 +47,7 @@ class Move
   end
 end
 
-class Rock < Move 
+class Rock < Move
   def initialize(value)
     super(value)
   end
@@ -56,20 +57,21 @@ class Paper < Move
   def initialize(value)
     super(value)
   end
-end 
+end
 
-class Scissors < Move 
+class Scissors < Move
   def initialize(value)
     super(value)
   end
-end 
+end
+
 class Lizard < Move
   def initialize(value)
     super(value)
   end
-end 
+end
 
-class Spock < Move 
+class Spock < Move
   def initialize(value)
     super(value)
   end
@@ -77,6 +79,7 @@ end
 
 class Player
   attr_accessor :move, :name, :points, :move_history
+
   def initialize
     @points = 0
     @move_history = []
@@ -84,7 +87,7 @@ class Player
   end
 
   def choice_to_new_obj(choice)
-    case choice  
+    case choice
     when "rock" then Rock.new('rock')
     when "paper" then Paper.new('paper')
     when "scissors" then Scissors.new('scissors')
@@ -104,6 +107,7 @@ class Human < Player
       break unless n.empty?
       puts "Sorry, must enter a value."
     end
+
     self.name = n
   end
 
@@ -115,6 +119,7 @@ class Human < Player
       break if Move::VALUES.include? choice
       puts "Sorry, invalid choice"
     end
+
     self.move = choice_to_new_obj(choice)
     self.move_history << choice
   end
@@ -124,15 +129,16 @@ class Computer < Player
   def set_name
     self.name = ['R2D2', 'CHAPPIER', 'WALL-E', 'The Iron Giant'].sample
   end
+
   def computer_personalities
-    case self.name 
-    when 'R2D2' then ['rock','rock','rock','paper','spock'].sample
-    when 'CHAPPIER' then ['lizard','lizard','rock','paper','spock'].sample
+    case self.name
+    when 'R2D2' then ['rock', 'rock', 'rock', 'paper', 'spock'].sample
+    when 'CHAPPIER' then ['lizard', 'lizard', 'rock', 'paper', 'spock'].sample
     when 'WALL-E' then 'scissors'
-    when 'The Iron Giant' then ['rock','paper','scissors','lizard','spock'].sample
+    when 'The Iron Giant' then ['rock', 'paper', 'scissors', 'lizard', 'spock'].sample
     end
   end
-  
+
   def choose
     choice = computer_personalities
     self.move = choice_to_new_obj(choice)
@@ -140,7 +146,7 @@ class Computer < Player
   end
 end
 
-module Displayable 
+module Displayable
   def display_welcome_message
     # system("clear")
     puts "Welcome to Rock, Paper, Scissors, Spock, Lizard!"
@@ -171,7 +177,7 @@ module Displayable
     puts "#{computer.name}'s previous moves: #{computer.move_history.join(' , ')}"
   end
 
-  def display_tie 
+  def display_tie
     puts "It's a tie!"
     # sleep(1.5)
     # system("clear")
@@ -198,6 +204,7 @@ end
 
 class RPSGame
   include Displayable
+
   attr_accessor :human, :computer
 
   def initialize
@@ -245,7 +252,3 @@ class RPSGame
 end
 
 RPSGame.new.play
-
-=begin
-
-=end
