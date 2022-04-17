@@ -7,23 +7,23 @@ class Move
   end
 
   def scissors?
-    self.value == 'scissors'
+    value == 'scissors'
   end
 
   def rock?
-    self.value == 'rock'
+    value == 'rock'
   end
 
   def paper?
-    self.value == 'paper'
+    value == 'paper'
   end
 
   def spock?
-    self.value == 'spock'
+    value == 'spock'
   end
 
   def lizard?
-    self.value == "lizard"
+    value == "lizard"
   end
 
   def >(other_move)
@@ -121,28 +121,28 @@ class Human < Player
     end
 
     self.move = choice_to_new_obj(choice)
-    self.move_history << choice
+    move_history << choice
   end
 end
 
-class Computer < Player
+class Comp < Player
   def set_name
     self.name = ['R2D2', 'CHAPPIER', 'WALL-E', 'The Iron Giant'].sample
   end
 
-  def computer_personalities
-    case self.name
+  def comp_personalities
+    case name
     when 'R2D2' then ['rock', 'rock', 'rock', 'paper', 'spock'].sample
     when 'CHAPPIER' then ['lizard', 'lizard', 'rock', 'paper', 'spock'].sample
-    when 'WALL-E' then 'scissors'
-    when 'The Iron Giant' then ['rock', 'paper', 'scissors', 'lizard', 'spock'].sample
+    when 'WALL-E' then ['rock', 'paper', 'scissors', 'lizard', 'spock'].sample
+    when 'The Iron Giant' then 'scissors'
     end
   end
 
   def choose
-    choice = computer_personalities
+    choice = comp_personalities
     self.move = choice_to_new_obj(choice)
-    self.move_history << choice
+    move_history << choice
   end
 end
 
@@ -165,16 +165,16 @@ module Displayable
     # system("clear")
   end
 
-  def display_computer_wins
-    puts "#{computer.name} won!"
+  def display_comp_wins
+    puts "#{comp.name} won!"
     # sleep(1.5)
-    computer.points += 1
+    comp.points += 1
     # system("clear")
   end
 
   def display_move_history
     puts "#{human.name}'s previous moves: #{human.move_history.join(', ')}"
-    puts "#{computer.name}'s previous moves: #{computer.move_history.join(' , ')}"
+    puts "#{comp.name}'s previous moves: #{comp.move_history.join(', ')}"
   end
 
   def display_tie
@@ -186,38 +186,38 @@ module Displayable
   def display_winner
     puts "#{human.name} chose #{human.move}."
     # sleep(1)
-    puts "#{computer.name} chose #{computer.move}."
+    puts "#{comp.name} chose #{comp.move}."
     # sleep(1)
-    if human.move > computer.move
+    if human.move > comp.move
       display_human_wins
-    elsif human.move < computer.move
-      display_computer_wins
+    elsif human.move < comp.move
+      display_comp_wins
     else
       display_tie
     end
   end
 
   def display_points
-    puts "#{human.name}:#{human.points} | #{computer.name}:#{computer.points}"
+    puts "#{human.name}:#{human.points} | #{comp.name}:#{comp.points}"
   end
 end
 
 class RPSGame
   include Displayable
 
-  attr_accessor :human, :computer
+  attr_accessor :human, :comp
 
   def initialize
     @human = Human.new
-    @computer = Computer.new
+    @comp = Comp.new
   end
 
   def reset_game
     human.points = 0
-    computer.points = 0
+    comp.points = 0
     human.move_history = []
-    computer.move_history = []
-    computer.name = ['R2D2', 'CHAPPIER', 'WALL-E', 'The Iron Giant'].sample
+    comp.move_history = []
+    comp.name = ['R2D2', 'CHAPPIER', 'WALL-E', 'The Iron Giant'].sample
   end
 
   def play_again?
@@ -232,14 +232,14 @@ class RPSGame
   end
 
   def point_check
-    human.points.eql?(10) || computer.points.eql?(10)
+    human.points.eql?(10) || comp.points.eql?(10)
   end
 
   def play
     display_welcome_message
     loop do
       human.choose
-      computer.choose
+      comp.choose
       display_winner
       display_move_history
       display_points
