@@ -1,4 +1,6 @@
 module Displayable
+  private
+
   def display_welcome_message
     system("clear")
     puts "Welcome to Rock, Paper, Scissors, Spock, Lizard!"
@@ -42,6 +44,10 @@ module Displayable
     sleep(1)
   end
 
+  def display_points
+    puts "#{human.name}:#{human.points} | #{comp.name}:#{comp.points}"
+  end
+
   def display_winner
     display_choices
     if human.move.value == comp.move.value
@@ -51,10 +57,6 @@ module Displayable
     else
       display_comp_wins
     end
-  end
-
-  def display_points
-    puts "#{human.name}:#{human.points} | #{comp.name}:#{comp.points}"
   end
 end
 
@@ -91,6 +93,12 @@ class Move
     value == other_move
   end
 
+  def to_s
+    @value
+  end
+
+  protected
+
   def <=>(other_move)
     return 1 if rock_wins?(other_move) ||
                 paper_wins?(other_move) ||
@@ -118,10 +126,6 @@ class Move
 
   def lizard_wins?(other_move)
     (lizard? && (other_move.paper? || other_move.spock?))
-  end
-
-  def to_s
-    @value
   end
 end
 
@@ -164,6 +168,8 @@ class Player
     set_name
   end
 
+  private
+
   def choice_to_new_obj(choice)
     case choice
     when "rock" then Rock.new('rock')
@@ -176,19 +182,6 @@ class Player
 end
 
 class Human < Player
-  def set_name
-    system("clear")
-    n = ""
-    loop do
-      puts "What is your name?"
-      n = gets.chomp
-      break unless n.empty?
-      puts "Sorry, must enter a value."
-    end
-
-    self.name = n
-  end
-
   def choose
     choice = nil
     loop do
@@ -201,13 +194,24 @@ class Human < Player
     self.move = choice_to_new_obj(choice)
     move_history << choice
   end
+
+  private
+
+  def set_name
+    system("clear")
+    n = ""
+    loop do
+      puts "What is your name?"
+      n = gets.chomp
+      break unless n.empty?
+      puts "Sorry, must enter a value."
+    end
+
+    self.name = n
+  end
 end
 
 class Comp < Player
-  def set_name
-    self.name = ['R2D2', 'CHAPPIER', 'WALL-E', 'The Iron Giant'].sample
-  end
-
   def comp_personalities
     case name
     when 'R2D2' then ['rock', 'rock', 'rock', 'paper', 'spock'].sample
@@ -222,9 +226,17 @@ class Comp < Player
     self.move = choice_to_new_obj(choice)
     move_history << choice
   end
+
+  private
+
+  def set_name
+    self.name = ['R2D2', 'CHAPPIER', 'WALL-E', 'The Iron Giant'].sample
+  end
 end
 
 class RPSGame
+  private
+
   include Displayable
 
   attr_accessor :human, :comp
@@ -266,6 +278,8 @@ class RPSGame
   def point_check
     human.points.eql?(10) || comp.points.eql?(10)
   end
+
+  public
 
   def play
     display_welcome_message
