@@ -65,6 +65,7 @@ class Move
   attr_accessor :value
 
   VALUES = ['rock', 'paper', 'scissors', 'spock', 'lizard']
+
   def initialize(value)
     self.value = value
   end
@@ -185,14 +186,28 @@ class Human < Player
   def choose
     choice = nil
     loop do
-      puts "Please choose rock, paper, scissors, spock, or lizard:"
-      choice = gets.chomp
-      break if Move::VALUES.include? choice
+      puts "Please choose (r)ock, (p)aper, (sc)issors, (sp)ock, or (l)izard:"
+      choice = gets.chomp.downcase.strip
+      break if choice_validation(choice)
       puts "Sorry, invalid choice"
     end
-
+    choice = short_to_full(choice)
     self.move = choice_to_new_obj(choice)
     move_history << choice
+  end
+
+  def choice_validation(choice)
+    ((Move::VALUES.any? { |v| v.start_with? choice }) &&
+    (choice != "s"))
+  end
+
+  def short_to_full(choice)
+    if choice.start_with?('r') then 'rock'
+    elsif choice.start_with?('p') then 'paper'
+    elsif choice.start_with?('sc') then 'scissors'
+    elsif choice.start_with?('sp') then 'spock'
+    else 'lizard'
+    end
   end
 
   private
