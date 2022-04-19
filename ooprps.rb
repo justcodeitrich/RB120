@@ -44,12 +44,12 @@ module Displayable
 
   def display_winner
     display_choices
-    if human.move > comp.move
-      display_human_wins
-    elsif human.move < comp.move
-      display_comp_wins
-    else
+    if human.move.value == comp.move.value
       display_tie
+    elsif human.move > comp.move
+      display_human_wins
+    else
+      display_comp_wins
     end
   end
 
@@ -59,6 +59,7 @@ module Displayable
 end
 
 class Move
+  include Comparable
   attr_accessor :value
 
   VALUES = ['rock', 'paper', 'scissors', 'spock', 'lizard']
@@ -86,12 +87,17 @@ class Move
     value == "lizard"
   end
 
-  def >(other_move)
-    rock_wins?(other_move) ||
-      paper_wins?(other_move) ||
-      scissors_wins?(other_move) ||
-      spock_wins?(other_move) ||
-      lizard_wins?(other_move)
+  def tie?(other_move)
+    value == other_move
+  end
+
+  def <=>(other_move)
+    return 1 if rock_wins?(other_move) ||
+                paper_wins?(other_move) ||
+                scissors_wins?(other_move) ||
+                spock_wins?(other_move) ||
+                lizard_wins?(other_move)
+    -1
   end
 
   def rock_wins?(other_move)
@@ -112,34 +118,6 @@ class Move
 
   def lizard_wins?(other_move)
     (lizard? && (other_move.paper? || other_move.spock?))
-  end
-
-  def <(other_move)
-    rock_lose?(other_move) ||
-      paper_lose?(other_move) ||
-      scissors_lose?(other_move) ||
-      spock_lose?(other_move) ||
-      lizard_lose?(other_move)
-  end
-
-  def rock_lose?(other_move)
-    (rock? && (other_move.paper? || other_move.spock?))
-  end
-
-  def paper_lose?(other_move)
-    (paper? && (other_move.scissors? || other_move.lizard?))
-  end
-
-  def scissors_lose?(other_move)
-    (scissors? && (other_move.rock? || other_move.spock?))
-  end
-
-  def spock_lose?(other_move)
-    (spock? && (other_move.lizard? || other_move.paper?))
-  end
-
-  def lizard_lose?(other_move)
-    (lizard? && (other_move.rock? || other_move.scissors?))
   end
 
   def to_s
