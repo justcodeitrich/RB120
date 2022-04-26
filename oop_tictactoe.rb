@@ -30,12 +30,6 @@ class Board
     end
     nil 
   end
-  
-  def three_identical_markers?(squares)
-    markers = squares.select(&:marked?).collect(&:marker)
-    return false if markers.size != 3 
-    markers.min == markers.max 
-  end
 
   def reset 
     (1..9).each {|key| @squares[key] = Square.new}
@@ -57,6 +51,14 @@ class Board
 
   def []=(num,marker)
     @squares[num].marker = marker
+  end
+
+  private 
+
+  def three_identical_markers?(squares)
+    markers = squares.select(&:marked?).collect(&:marker)
+    return false if markers.size != 3 
+    markers.min == markers.max 
   end
 end
 
@@ -95,13 +97,35 @@ class TTTGame
   FIRST_TO_MOVE = HUMAN_MARKER
   attr_reader :board, :human, :computer
   attr_accessor :current_marker
-
+  
   def initialize
     @board = Board.new
     @human = Player.new(HUMAN_MARKER)
     @computer = Player.new(COMPUTER_MARKER)
     @current_marker = FIRST_TO_MOVE
   end
+
+  def play
+    clear
+    display_welcome_message
+    loop do 
+    display_board
+
+      loop do
+        current_player_moves
+        break if board.someone_won? || board.full?
+        clear_screen_and_display_board if human_turn?
+      end
+
+      display_result
+      break unless play_again?
+      reset
+      display_play_again_message
+    end
+    display_goodbye_message
+  end
+
+  private
 
   def display_welcome_message
     puts "Welcome to Tic Tac Toe!"
@@ -189,26 +213,7 @@ class TTTGame
     puts "Let's play again!"
     puts ""
   end
-  
-  def play
-    clear
-    display_welcome_message
-    loop do 
-    display_board
 
-      loop do
-        current_player_moves
-        break if board.someone_won? || board.full?
-        clear_screen_and_display_board if human_turn?
-      end
-
-      display_result
-      break unless play_again?
-      reset
-      display_play_again_message
-    end
-    display_goodbye_message
-  end
 end
 
 game = TTTGame.new
