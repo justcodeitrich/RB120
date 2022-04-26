@@ -8,7 +8,7 @@ class Board
     @squares = {}
     reset
   end
-  
+
   def unmarked_keys 
     @squares.keys.select {|key| @squares[key].unmarked?} 
   end
@@ -26,16 +26,25 @@ class Board
   end
 
   def count_computer_marker(squares)
+    
     squares.map(&:marker).count(TTTGame::COMPUTER_MARKER)
+  end
+
+  def count_marker(squares)
+    if squares.map(&:marker).all? {|m| m == "X"}
+      return true
+    elsif squares.map(&:marker).all? {|m| m == "O"}
+      return true
+    else 
+      false
+    end
   end
 
   def winning_marker 
     WINNING_LINES.each do |line| 
-      if count_human_marker(@squares.values_at(*line)) == 3
-        return TTTGame::HUMAN_MARKER
-      elsif count_computer_marker(@squares.values_at(*line)) == 3
-        return TTTGame::COMPUTER_MARKER
-      end
+       if count_marker(@squares.values_at(*line))  
+        return @squares.values_at(*line).map(&:marker)[0]
+       end
     end
     nil 
   end
