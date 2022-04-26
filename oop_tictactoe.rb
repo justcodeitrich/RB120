@@ -92,6 +92,7 @@ end
 class TTTGame
   HUMAN_MARKER = "X"
   COMPUTER_MARKER = "O" 
+  FIRST_TO_MOVE = HUMAN_MARKER
   attr_reader :board, :human, :computer
   attr_accessor :current_marker
 
@@ -99,7 +100,7 @@ class TTTGame
     @board = Board.new
     @human = Player.new(HUMAN_MARKER)
     @computer = Player.new(COMPUTER_MARKER)
-    @current_marker = HUMAN_MARKER
+    @current_marker = FIRST_TO_MOVE
   end
 
   def display_welcome_message
@@ -180,7 +181,7 @@ class TTTGame
 
   def reset 
     board.reset
-    self.current_marker = HUMAN_MARKER
+    self.current_marker = FIRST_TO_MOVE
     clear
   end
 
