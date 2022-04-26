@@ -92,8 +92,8 @@ end
 class TTTGame
   HUMAN_MARKER = "X"
   COMPUTER_MARKER = "O"
-
-  attr_reader :board, :human, :computer 
+  @@turn_counter = 0 
+  attr_reader :board, :human, :computer
 
   def initialize
     @board = Board.new
@@ -114,6 +114,21 @@ class TTTGame
     puts ""
     board.draw 
     puts ""
+  end
+
+  def current_player_moves
+    # binding.pry
+    if @@turn_counter.even?
+      human_moves
+      @@turn_counter += 1
+    elsif @@turn_counter.odd?
+      computer_moves
+      @@turn_counter += 1
+    end
+  end
+
+  def human_turn? 
+    @@turn_counter.even?
   end
 
   def human_moves
@@ -165,6 +180,7 @@ class TTTGame
 
   def reset 
     board.reset
+    @@turn_counter = 0 
     clear
   end
 
@@ -178,14 +194,13 @@ class TTTGame
     display_welcome_message
     loop do 
     display_board
-      loop do
-        human_moves
-        break if board.someone_won? || board.full?
 
-        computer_moves
+      loop do
+        current_player_moves
         break if board.someone_won? || board.full?
-        clear_screen_and_display_board
+        clear_screen_and_display_board if human_turn?
       end
+
       display_result
       break unless play_again?
       reset
