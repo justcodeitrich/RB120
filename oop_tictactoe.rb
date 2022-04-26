@@ -91,14 +91,15 @@ end
 
 class TTTGame
   HUMAN_MARKER = "X"
-  COMPUTER_MARKER = "O"
-  @@turn_counter = 0 
+  COMPUTER_MARKER = "O" 
   attr_reader :board, :human, :computer
+  attr_accessor :current_marker
 
   def initialize
     @board = Board.new
     @human = Player.new(HUMAN_MARKER)
     @computer = Player.new(COMPUTER_MARKER)
+    @current_marker = HUMAN_MARKER
   end
 
   def display_welcome_message
@@ -117,18 +118,17 @@ class TTTGame
   end
 
   def current_player_moves
-    # binding.pry
-    if @@turn_counter.even?
+    if self.current_marker == HUMAN_MARKER
       human_moves
-      @@turn_counter += 1
-    elsif @@turn_counter.odd?
+      self.current_marker = COMPUTER_MARKER
+    else
       computer_moves
-      @@turn_counter += 1
+      self.current_marker = HUMAN_MARKER
     end
   end
 
   def human_turn? 
-    @@turn_counter.even?
+    self.current_marker == HUMAN_MARKER
   end
 
   def human_moves
@@ -180,7 +180,7 @@ class TTTGame
 
   def reset 
     board.reset
-    @@turn_counter = 0 
+    self.current_marker = HUMAN_MARKER
     clear
   end
 
