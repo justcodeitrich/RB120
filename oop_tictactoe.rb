@@ -89,9 +89,11 @@ end
 
 class Player
   attr_reader :marker
+  attr_accessor :score
 
   def initialize(marker)
     @marker = marker
+    @score = 0
   end
 end
 
@@ -99,14 +101,16 @@ class TTTGame
   HUMAN_MARKER = "X"
   COMPUTER_MARKER = "O"
   FIRST_TO_MOVE = HUMAN_MARKER
+  POINTS_TO_WIN = 5
   attr_reader :board, :human, :computer
-  attr_accessor :current_marker
+  attr_accessor :current_marker, :scoreboard
 
   def initialize
     @board = Board.new
     @human = Player.new(HUMAN_MARKER)
     @computer = Player.new(COMPUTER_MARKER)
     @current_marker = FIRST_TO_MOVE
+    @scoreboard = [@human, @computer]
   end
 
   def play
@@ -122,10 +126,11 @@ class TTTGame
     loop do
       display_board
       player_move
+      add_point_to_winner
       display_result
       break unless play_again?
       reset
-      display_play_again_message
+      reset_scoreboard if scoreboard.any? { |obj| obj.score == POINTS_TO_WIN }
     end
   end
 
@@ -139,6 +144,11 @@ class TTTGame
 
   def display_welcome_message
     puts "Welcome to Tic Tac Toe!"
+    puts "First to #{POINTS_TO_WIN} wins the game!"
+  end
+
+  def display_scoreboard
+    puts "Score | You: #{scoreboard[0].score} | Comp: #{scoreboard[1].score}"
   end
 
   def display_goodbye_message
@@ -147,9 +157,18 @@ class TTTGame
 
   def display_board
     puts "You are #{human.marker}. Computer is #{computer.marker}."
+    display_scoreboard
     puts ""
     board.draw
     puts ""
+  end
+
+  def add_point_to_winner
+    if board.winning_marker == HUMAN_MARKER
+      scoreboard[0].score += 1
+    elsif board.winning_marker == COMPUTER_MARKER
+      scoreboard[1].score += 1
+    end
   end
 
   def current_player_moves
@@ -196,9 +215,11 @@ class TTTGame
     else
       puts "It's a tie!"
     end
+    sleep 1.2
   end
 
   def play_again?
+    return true unless scoreboard.any? { |obj| obj.score == POINTS_TO_WIN }
     answer = nil
     loop do
       puts "Would you like to play again? (y/n)"
@@ -224,9 +245,8 @@ class TTTGame
     clear
   end
 
-  def display_play_again_message
-    puts "Let's play again!"
-    puts ""
+  def reset_scoreboard
+    scoreboard.each { |obj| obj.score = 0 }
   end
 end
 
