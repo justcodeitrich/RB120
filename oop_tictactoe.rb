@@ -1,3 +1,4 @@
+require 'pry'
 class Board
   WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] +
                   [[1, 4, 7], [2, 5, 8], [3, 6, 9]] +
@@ -165,8 +166,13 @@ class TTTGame
     current_marker == HUMAN_MARKER
   end
 
+  def joinor(keys, delimiter = ", ", word = "or")
+    return keys.first if keys.size == 1
+    keys[0..-2].join(delimiter).concat(delimiter) + word + " " + keys.last.to_s
+  end
+
   def human_moves
-    puts "Choose a square (#{board.unmarked_keys.join(', ')})"
+    puts "Choose a square (#{joinor(board.unmarked_keys)})"
     square = nil
     loop do
       square = gets.chomp.to_i
