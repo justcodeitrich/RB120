@@ -21,8 +21,35 @@ class Board
     !!winning_marker
   end
 
+  def comp_under_threat?
+    WINNING_LINES.each do |line|
+      squares = @squares.values_at(*line)
+      return true if two_of_three_markers?(squares)
+    end
+    # binding.pry
+    nil
+  end
+
+  def place_defensive_piece
+    WINNING_LINES.each do |line|
+      squares = @squares.values_at(*line)
+      if two_of_three_markers?(squares)
+        # binding.pry
+        line.each {|key| return key if @squares[key].marker == " "}
+      end
+    end
+    nil
+  end
+
+  def two_of_three_markers?(squares)
+    return false if squares.any?{|square| square.computer_marker?}
+    markers = squares.select(&:human_marker?).collect(&:marker)
+    markers.size == 2
+  end
+
   def winning_marker
     WINNING_LINES.each do |line|
+      
       squares = @squares.values_at(*line)
       if three_identical_markers?(squares)
         return squares.first.marker
@@ -85,6 +112,14 @@ class Square
   def marked?
     marker != INITIAL_MARKER
   end
+
+  def human_marker?
+    marker == TTTGame::HUMAN_MARKER
+  end
+
+  def computer_marker?
+    marker == TTTGame::COMPUTER_MARKER
+  end
 end
 
 class Player
@@ -94,6 +129,18 @@ class Player
   def initialize(marker)
     @marker = marker
     @score = 0
+  end
+end
+
+class Computer < Player
+  def under_threat?
+    
+  end
+
+  def place_defensive_piece
+    # board[key] = computer marker
+    # check to see if there are any 2 consecutive squares with human marker
+    # if there is, locate the third square to play defensive piece
   end
 end
 
@@ -202,7 +249,12 @@ class TTTGame
   end
 
   def computer_moves
-    board[board.unmarked_keys.sample] = (computer.marker)
+    if board.comp_under_threat?
+      # binding.pry
+      board[board.place_defensive_piece] = (computer.marker)
+    else
+      board[board.unmarked_keys.sample] = (computer.marker)
+    end
   end
 
   def display_result
