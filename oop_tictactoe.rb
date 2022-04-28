@@ -143,6 +143,10 @@ class Computer < Player
     nil
   end
 
+  def square_five_empty?
+    board.squares[5].marker == " "
+  end
+
   private
 
   def two_consecutive_human_pieces?(squares)
@@ -265,6 +269,8 @@ class TTTGame
   def computer_moves
     if computer.possible_win?
       board[computer.offensive_piece] = (computer.marker)
+    elsif computer.square_five_empty?
+      board[5] = (computer.marker)
     elsif computer.under_threat?
       board[computer.defensive_piece] = (computer.marker)
     else
