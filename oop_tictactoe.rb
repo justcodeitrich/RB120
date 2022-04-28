@@ -119,10 +119,24 @@ class Computer < Player
     !!defensive_piece
   end
 
+  def possible_win?
+    !!offensive_piece
+  end
+
+  def offensive_piece
+    Board::WINNING_LINES.each do |line|
+      squares = board.squares.values_at(*line)
+      if two_consecutive_comp_pieces?(squares)
+        line.each { |key| return key if board.squares[key].marker == " " }
+      end
+    end
+    nil
+  end
+
   def defensive_piece
     Board::WINNING_LINES.each do |line|
       squares = board.squares.values_at(*line)
-      if two_consecutive_human_markers?(squares)
+      if two_consecutive_human_pieces?(squares)
         line.each { |key| return key if board.squares[key].marker == " " }
       end
     end
@@ -131,9 +145,15 @@ class Computer < Player
 
   private
 
-  def two_consecutive_human_markers?(squares)
+  def two_consecutive_human_pieces?(squares)
     return false if squares.any?(&:computer_marker?)
     markers = squares.select(&:human_marker?).collect(&:marker)
+    markers.size == 2
+  end
+
+  def two_consecutive_comp_pieces?(squares)
+    return false if squares.any?(&:human_marker?)
+    markers = squares.select(&:computer_marker?).collect(&:marker)
     markers.size == 2
   end
 end
@@ -243,7 +263,9 @@ class TTTGame
   end
 
   def computer_moves
-    if computer.under_threat?
+    if computer.possible_win?
+      board[computer.offensive_piece] = (computer.marker)
+    elsif computer.under_threat?
       board[computer.defensive_piece] = (computer.marker)
     else
       board[board.unmarked_keys.sample] = (computer.marker)
