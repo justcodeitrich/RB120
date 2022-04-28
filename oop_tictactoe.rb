@@ -157,6 +157,7 @@ class Computer < Player
 
   def select_random_square
     board[board.unmarked_keys.sample] = (marker)
+    
   end
 
   def select_square_five
@@ -181,7 +182,6 @@ end
 class TTTGame
   HUMAN_MARKER = "X"
   COMPUTER_MARKER = "O"
-  # FIRST_TO_MOVE = nil
   POINTS_TO_WIN = 5
   attr_reader :board, :human, :computer
   attr_accessor :current_marker, :scoreboard
@@ -190,14 +190,15 @@ class TTTGame
     @board = Board.new
     @human = Player.new(HUMAN_MARKER)
     @computer = Computer.new(COMPUTER_MARKER, @board)
-    @current_marker
+    @first_to_move = nil 
+    @current_marker = nil
     @scoreboard = [@human, @computer]
   end
 
   def play
     clear
     display_welcome_message
-    self.current_marker = determine_who_goes_first
+    determine_who_goes_first
     main_game
     display_goodbye_message
   end
@@ -212,7 +213,7 @@ class TTTGame
       display_result
       break unless play_again?
       reset
-      reset_scoreboard if scoreboard.any? { |obj| obj.score == POINTS_TO_WIN }
+      prepare_next_game_series
     end
   end
 
@@ -231,23 +232,29 @@ class TTTGame
 
   def determine_who_goes_first
     puts "Who should go first?"
-    answer = nil 
-    loop do 
+    answer = nil
+    loop do
       puts ""
       puts "Type 1 if you want to go first."
       puts "Type 2 to let the computer go first."
-      answer = gets.chomp.to_i 
-      break if [1,2].include?(answer)
+      answer = gets.chomp.to_i
+      break if [1, 2].include?(answer)
       puts "Sorry, that's not a valid answer."
     end
-    clear 
+    clear
     if answer == 1
       puts "You go first!"
     else
       puts "Computer goes first!"
     end
     sleep 1.5
-    answer == 1 ? HUMAN_MARKER : COMPUTER_MARKER
+    if answer == 1 
+      @first_to_move = HUMAN_MARKER
+    elsif answer == 2
+      @first_to_move = COMPUTER_MARKER
+    end
+    @current_marker = @first_to_move
+    
   end
 
   def display_scoreboard
@@ -277,10 +284,12 @@ class TTTGame
   def current_player_moves
     if current_marker == HUMAN_MARKER
       human_moves
-      self.current_marker = COMPUTER_MARKER
-    else
+      @current_marker = COMPUTER_MARKER
+      
+    elsif current_marker == COMPUTER_MARKER
       computer_moves
-      self.current_marker = HUMAN_MARKER
+      @current_marker = HUMAN_MARKER
+      
     end
   end
 
@@ -351,13 +360,20 @@ class TTTGame
   end
 
   def reset
+    @current_marker = @first_to_move
     board.reset
-    self.current_marker = FIRST_TO_MOVE
     clear
   end
 
   def reset_scoreboard
     scoreboard.each { |obj| obj.score = 0 }
+  end
+
+  def prepare_next_game_series
+    if scoreboard.any? { |obj| obj.score == POINTS_TO_WIN }
+      reset_scoreboard
+      determine_who_goes_first
+    end
   end
 end
 
