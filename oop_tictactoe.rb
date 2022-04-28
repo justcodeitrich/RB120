@@ -1,5 +1,7 @@
 require 'pry'
 class Board
+  attr_reader :squares
+
   WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] +
                   [[1, 4, 7], [2, 5, 8], [3, 6, 9]] +
                   [[1, 5, 9], [3, 5, 7]]
@@ -21,35 +23,8 @@ class Board
     !!winning_marker
   end
 
-  def comp_under_threat?
-    WINNING_LINES.each do |line|
-      squares = @squares.values_at(*line)
-      return true if two_of_three_markers?(squares)
-    end
-    # binding.pry
-    nil
-  end
-
-  def place_defensive_piece
-    WINNING_LINES.each do |line|
-      squares = @squares.values_at(*line)
-      if two_of_three_markers?(squares)
-        # binding.pry
-        line.each {|key| return key if @squares[key].marker == " "}
-      end
-    end
-    nil
-  end
-
-  def two_of_three_markers?(squares)
-    return false if squares.any?{|square| square.computer_marker?}
-    markers = squares.select(&:human_marker?).collect(&:marker)
-    markers.size == 2
-  end
-
   def winning_marker
     WINNING_LINES.each do |line|
-      
       squares = @squares.values_at(*line)
       if three_identical_markers?(squares)
         return squares.first.marker
@@ -133,14 +108,33 @@ class Player
 end
 
 class Computer < Player
-  def under_threat?
-    
+  attr_reader :board
+
+  def initialize(marker, current_board)
+    @board = current_board
+    super(marker)
   end
 
-  def place_defensive_piece
-    # board[key] = computer marker
-    # check to see if there are any 2 consecutive squares with human marker
-    # if there is, locate the third square to play defensive piece
+  def under_threat?
+    !!defensive_piece
+  end
+
+  def defensive_piece
+    Board::WINNING_LINES.each do |line|
+      squares = board.squares.values_at(*line)
+      if two_consecutive_human_markers?(squares)
+        line.each { |key| return key if board.squares[key].marker == " " }
+      end
+    end
+    nil
+  end
+
+  private
+
+  def two_consecutive_human_markers?(squares)
+    return false if squares.any?(&:computer_marker?)
+    markers = squares.select(&:human_marker?).collect(&:marker)
+    markers.size == 2
   end
 end
 
@@ -155,7 +149,7 @@ class TTTGame
   def initialize
     @board = Board.new
     @human = Player.new(HUMAN_MARKER)
-    @computer = Player.new(COMPUTER_MARKER)
+    @computer = Computer.new(COMPUTER_MARKER, @board)
     @current_marker = FIRST_TO_MOVE
     @scoreboard = [@human, @computer]
   end
@@ -249,9 +243,8 @@ class TTTGame
   end
 
   def computer_moves
-    if board.comp_under_threat?
-      # binding.pry
-      board[board.place_defensive_piece] = (computer.marker)
+    if computer.under_threat?
+      board[computer.defensive_piece] = (computer.marker)
     else
       board[board.unmarked_keys.sample] = (computer.marker)
     end
