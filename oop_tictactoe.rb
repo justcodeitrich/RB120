@@ -59,6 +59,10 @@ class Board
     @squares[num].marker = marker
   end
 
+  def square_five_empty?
+    squares[5].marker == " "
+  end
+
   private
 
   def three_identical_markers?(squares)
@@ -143,8 +147,20 @@ class Computer < Player
     nil
   end
 
-  def square_five_empty?
-    board.squares[5].marker == " "
+  def place_defensive_piece
+    board[defensive_piece] = (marker)
+  end
+
+  def place_offensive_piece
+    board[offensive_piece] = (marker)
+  end
+
+  def select_random_square
+    board[board.unmarked_keys.sample] = (marker)
+  end
+
+  def select_square_five
+    board[5] = (marker)
   end
 
   private
@@ -268,13 +284,13 @@ class TTTGame
 
   def computer_moves
     if computer.possible_win?
-      board[computer.offensive_piece] = (computer.marker)
-    elsif computer.square_five_empty?
-      board[5] = (computer.marker)
+      computer.place_offensive_piece
+    elsif board.square_five_empty?
+      computer.select_square_five
     elsif computer.under_threat?
-      board[computer.defensive_piece] = (computer.marker)
+      computer.place_defensive_piece
     else
-      board[board.unmarked_keys.sample] = (computer.marker)
+      computer.select_random_square
     end
   end
 
