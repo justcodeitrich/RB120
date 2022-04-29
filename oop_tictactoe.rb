@@ -93,7 +93,7 @@ class Square
   end
 
   def human_marker?
-    marker == TTTGame::HUMAN_MARKER
+    marker == TTTGame.human_marker
   end
 
   def computer_marker?
@@ -102,10 +102,9 @@ class Square
 end
 
 class Player
-  attr_reader :marker
-  attr_accessor :score
+  attr_accessor :score, :marker
 
-  def initialize(marker)
+  def initialize(marker=nil)
     @marker = marker
     @score = 0
   end
@@ -179,26 +178,34 @@ class Computer < Player
 end
 
 class TTTGame
-  HUMAN_MARKER = "X"
   COMPUTER_MARKER = "O"
   POINTS_TO_WIN = 5
-  HUMAN = 1
-  COMPUTER = 2
+  HUMAN_ID = 1
+  COMPUTER_ID = 2
   attr_reader :board, :human, :computer
   attr_accessor :current_marker, :scoreboard
 
   def initialize
     @board = Board.new
-    @human = Player.new(HUMAN_MARKER)
+    @human = Player.new()
     @computer = Computer.new(COMPUTER_MARKER, @board)
     @first_to_move = nil
     @current_marker = nil
     @scoreboard = [@human, @computer]
   end
 
+  def self.human_marker
+    @@human_marker
+  end
+
+  def self.human_marker=(value)
+    @@human_marker = value
+  end
+
   def play
     clear
     display_welcome_message
+    human_picks_marker
     determine_who_goes_first
     main_game
     display_goodbye_message
@@ -231,6 +238,23 @@ class TTTGame
     puts "First to #{POINTS_TO_WIN} wins the game!"
   end
 
+  def ask_human_to_pick_marker
+    puts "Pick your marker!"
+    answer = nil
+    loop do
+      puts "Type in any single character."
+      answer = gets.chomp
+      break if answer.size == 1
+      puts "Sorry, that's an invalid marker."
+    end
+    answer
+  end
+
+  def human_picks_marker
+    TTTGame.human_marker = ask_human_to_pick_marker
+    human.marker = TTTGame.human_marker
+  end
+
   def ask_who_goes_first
     puts ""
     puts "Who should go first?"
@@ -241,7 +265,7 @@ class TTTGame
 
   def display_who_goes_first(answer)
     clear
-    if answer == HUMAN
+    if answer == HUMAN_ID
       puts "You go first!"
     else
       puts "Computer goes first!"
@@ -250,9 +274,9 @@ class TTTGame
   end
 
   def assign_move_markers_to_answer(answer)
-    if answer == HUMAN
-      @first_to_move = HUMAN_MARKER
-    elsif answer == COMPUTER
+    if answer == HUMAN_ID
+      @first_to_move = TTTGame.human_marker
+    elsif answer == COMPUTER_ID
       @first_to_move = COMPUTER_MARKER
     end
     @current_marker = @first_to_move
@@ -270,7 +294,7 @@ class TTTGame
     answer = nil
     loop do
       answer = gets.chomp.to_i
-      break if [HUMAN, COMPUTER].include?(answer)
+      break if [HUMAN_ID, COMPUTER_ID].include?(answer)
       puts "Sorry, that's not a valid answer."
     end
     answer
@@ -279,9 +303,9 @@ class TTTGame
   def determine_who_goes_first
     ask_who_should_decide_first_mover
     decision_maker = user_answer
-    if decision_maker == HUMAN
+    if decision_maker == HUMAN_ID
       human_decision
-    elsif decision_maker == COMPUTER
+    elsif decision_maker == COMPUTER_ID
       computer_decision
     end
   end
@@ -294,7 +318,7 @@ class TTTGame
   end
 
   def computer_decision
-    comp_choice = [HUMAN, COMPUTER].sample
+    comp_choice = [HUMAN_ID, COMPUTER_ID].sample
     assign_move_markers_to_answer(comp_choice)
     display_who_goes_first(comp_choice)
   end
@@ -316,7 +340,7 @@ class TTTGame
   end
 
   def add_point_to_winner
-    if board.winning_marker == HUMAN_MARKER
+    if board.winning_marker == TTTGame.human_marker
       scoreboard[0].score += 1
     elsif board.winning_marker == COMPUTER_MARKER
       scoreboard[1].score += 1
@@ -324,17 +348,17 @@ class TTTGame
   end
 
   def current_player_moves
-    if current_marker == HUMAN_MARKER
+    if current_marker == TTTGame.human_marker
       human_moves
       @current_marker = COMPUTER_MARKER
     elsif current_marker == COMPUTER_MARKER
       computer_moves
-      @current_marker = HUMAN_MARKER
+      @current_marker = TTTGame.human_marker
     end
   end
 
   def human_turn?
-    current_marker == HUMAN_MARKER
+    current_marker == TTTGame.human_marker
   end
 
   def joinor(keys, delimiter = ", ", word = "or")
