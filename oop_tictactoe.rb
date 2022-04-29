@@ -157,7 +157,6 @@ class Computer < Player
 
   def select_random_square
     board[board.unmarked_keys.sample] = (marker)
-    
   end
 
   def select_square_five
@@ -190,7 +189,7 @@ class TTTGame
     @board = Board.new
     @human = Player.new(HUMAN_MARKER)
     @computer = Computer.new(COMPUTER_MARKER, @board)
-    @first_to_move = nil 
+    @first_to_move = nil
     @current_marker = nil
     @scoreboard = [@human, @computer]
   end
@@ -230,31 +229,43 @@ class TTTGame
     puts "First to #{POINTS_TO_WIN} wins the game!"
   end
 
-  def determine_who_goes_first
+  def ask_who_goes_first
+    puts ""
     puts "Who should go first?"
-    answer = nil
-    loop do
-      puts ""
-      puts "Type 1 if you want to go first."
-      puts "Type 2 to let the computer go first."
-      answer = gets.chomp.to_i
-      break if [1, 2].include?(answer)
-      puts "Sorry, that's not a valid answer."
-    end
-    clear
+    puts ""
+    puts "Type 1 if you want to go first."
+    puts "Type 2 to let the computer go first."
+  end
+
+  def display_who_goes_first(answer)
     if answer == 1
       puts "You go first!"
     else
       puts "Computer goes first!"
     end
     sleep 1.5
-    if answer == 1 
+  end
+
+  def assign_move_markers_to_answer(answer)
+    if answer == 1
       @first_to_move = HUMAN_MARKER
     elsif answer == 2
       @first_to_move = COMPUTER_MARKER
     end
     @current_marker = @first_to_move
-    
+  end
+
+  def determine_who_goes_first
+    answer = nil
+    loop do
+      ask_who_goes_first
+      answer = gets.chomp.to_i
+      break if [1, 2].include?(answer)
+      puts "Sorry, that's not a valid answer."
+    end
+    clear
+    display_who_goes_first(answer)
+    assign_move_markers_to_answer(answer)
   end
 
   def display_scoreboard
@@ -285,11 +296,9 @@ class TTTGame
     if current_marker == HUMAN_MARKER
       human_moves
       @current_marker = COMPUTER_MARKER
-      
     elsif current_marker == COMPUTER_MARKER
       computer_moves
       @current_marker = HUMAN_MARKER
-      
     end
   end
 
@@ -370,10 +379,9 @@ class TTTGame
   end
 
   def prepare_next_game_series
-    if scoreboard.any? { |obj| obj.score == POINTS_TO_WIN }
-      reset_scoreboard
-      determine_who_goes_first
-    end
+    return unless scoreboard.any? { |obj| obj.score == POINTS_TO_WIN }
+    reset_scoreboard
+    determine_who_goes_first
   end
 end
 
