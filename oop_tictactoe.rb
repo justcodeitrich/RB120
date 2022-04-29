@@ -102,11 +102,12 @@ class Square
 end
 
 class Player
-  attr_accessor :score, :marker
+  attr_accessor :score, :marker, :name
 
   def initialize(marker=nil)
     @marker = marker
     @score = 0
+    @name = name
   end
 end
 
@@ -115,6 +116,7 @@ class Computer < Player
 
   def initialize(marker, current_board)
     @board = current_board
+    @name = ["Donkey", "Farquad", "Shrek", "Puss in Boots"].sample
     super(marker)
   end
 
@@ -182,16 +184,16 @@ class TTTGame
   POINTS_TO_WIN = 5
   HUMAN_ID = 1
   COMPUTER_ID = 2
-  attr_reader :board, :human, :computer
+  attr_reader :board, :human, :comp
   attr_accessor :current_marker, :scoreboard
 
   def initialize
     @board = Board.new
     @human = Player.new()
-    @computer = Computer.new(COMPUTER_MARKER, @board)
+    @comp = Computer.new(COMPUTER_MARKER, @board)
     @first_to_move = nil
     @current_marker = nil
-    @scoreboard = [@human, @computer]
+    @scoreboard = [@human, @comp]
   end
 
   def self.human_marker
@@ -205,6 +207,7 @@ class TTTGame
   def play
     clear
     display_welcome_message
+    ask_for_name
     human_picks_marker
     determine_who_goes_first
     main_game
@@ -238,6 +241,17 @@ class TTTGame
     puts "First to #{POINTS_TO_WIN} wins the game!"
   end
 
+  def ask_for_name
+    puts "Please type your name."
+    answer = nil
+    loop do
+      answer = gets.chomp.strip
+      break unless answer =~ /[^a-zA-Z]/
+      puts "Sorry, that's an invalid input."
+    end
+    @human.name = answer
+  end
+
   def ask_human_to_pick_marker
     puts "Pick your marker!"
     answer = nil
@@ -266,9 +280,9 @@ class TTTGame
   def display_who_goes_first(answer)
     clear
     if answer == HUMAN_ID
-      puts "You go first!"
+      puts "#{human.name} go first!"
     else
-      puts "Computer goes first!"
+      puts "#{comp.name} the computer goes first!"
     end
     sleep 1.5
   end
@@ -323,20 +337,25 @@ class TTTGame
     display_who_goes_first(comp_choice)
   end
 
-  def display_scoreboard
-    puts "Score | You: #{scoreboard[0].score} | Comp: #{scoreboard[1].score}"
-  end
+  # rubocop:disable Layout/LineLength
 
-  def display_goodbye_message
-    puts "Thanks for playing. Goodbye!"
+  def display_scoreboard
+    puts ""
+    puts "#{human.name}'s score: #{scoreboard[0].score} | #{comp.name}'s score: #{scoreboard[1].score}"
   end
 
   def display_board
-    puts "You are #{human.marker}. Computer is #{computer.marker}."
+    puts "#{human.name} is playing #{human.marker}. #{comp.name} is playing #{comp.marker}."
     display_scoreboard
     puts ""
     board.draw
     puts ""
+  end
+
+  # rubocop:enable Layout/LineLength
+
+  def display_goodbye_message
+    puts "Thanks for playing. Goodbye!"
   end
 
   def add_point_to_winner
@@ -378,14 +397,14 @@ class TTTGame
   end
 
   def computer_moves
-    if computer.possible_win?
-      computer.place_offensive_piece
+    if comp.possible_win?
+      comp.place_offensive_piece
     elsif board.square_five_empty?
-      computer.select_square_five
-    elsif computer.under_threat?
-      computer.place_defensive_piece
+      comp.select_square_five
+    elsif comp.under_threat?
+      comp.place_defensive_piece
     else
-      computer.select_random_square
+      comp.select_random_square
     end
   end
 
@@ -393,9 +412,9 @@ class TTTGame
     clear_screen_and_display_board
     case board.winning_marker
     when human.marker
-      puts "You won!"
-    when computer.marker
-      puts "Computer won!"
+      puts "#{human.name} won!"
+    when comp.marker
+      puts "#{comp.name} won!"
     else
       puts "It's a tie!"
     end
