@@ -182,6 +182,8 @@ class TTTGame
   HUMAN_MARKER = "X"
   COMPUTER_MARKER = "O"
   POINTS_TO_WIN = 5
+  HUMAN = 1
+  COMPUTER = 2
   attr_reader :board, :human, :computer
   attr_accessor :current_marker, :scoreboard
 
@@ -238,7 +240,8 @@ class TTTGame
   end
 
   def display_who_goes_first(answer)
-    if answer == 1
+    clear
+    if answer == HUMAN
       puts "You go first!"
     else
       puts "Computer goes first!"
@@ -247,25 +250,53 @@ class TTTGame
   end
 
   def assign_move_markers_to_answer(answer)
-    if answer == 1
+    if answer == HUMAN
       @first_to_move = HUMAN_MARKER
-    elsif answer == 2
+    elsif answer == COMPUTER
       @first_to_move = COMPUTER_MARKER
     end
     @current_marker = @first_to_move
   end
 
-  def determine_who_goes_first
+  def ask_who_should_decide_first_mover
+    puts ""
+    puts "Who should decide who goes first?"
+    puts ""
+    puts "Type 1 if you want to choose."
+    puts "Type 2 to let the computer choose."
+  end
+
+  def user_answer
     answer = nil
     loop do
-      ask_who_goes_first
       answer = gets.chomp.to_i
-      break if [1, 2].include?(answer)
+      break if [HUMAN, COMPUTER].include?(answer)
       puts "Sorry, that's not a valid answer."
     end
-    clear
-    display_who_goes_first(answer)
-    assign_move_markers_to_answer(answer)
+    answer
+  end
+
+  def determine_who_goes_first
+    ask_who_should_decide_first_mover
+    decision_maker = user_answer
+    if decision_maker == HUMAN
+      human_decision
+    elsif decision_maker == COMPUTER
+      computer_decision
+    end
+  end
+
+  def human_decision
+    ask_who_goes_first
+    human_choice = user_answer
+    assign_move_markers_to_answer(human_choice)
+    display_who_goes_first(human_choice)
+  end
+
+  def computer_decision
+    comp_choice = [HUMAN, COMPUTER].sample
+    assign_move_markers_to_answer(comp_choice)
+    display_who_goes_first(comp_choice)
   end
 
   def display_scoreboard
