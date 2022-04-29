@@ -1,4 +1,3 @@
-require 'pry'
 class Board
   attr_reader :squares
 
@@ -36,6 +35,7 @@ class Board
   def reset
     (1..9).each { |key| @squares[key] = Square.new }
   end
+
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
 
@@ -52,6 +52,7 @@ class Board
     puts "  #{@squares[7]}  |  #{@squares[8]}  |  #{@squares[9]}"
     puts "     |     |"
   end
+
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
 
@@ -116,7 +117,7 @@ class Computer < Player
 
   def initialize(marker, current_board)
     @board = current_board
-    @name = ["Donkey", "Farquad", "Shrek", "Puss in Boots"].sample
+    @name = ["Donkey", "Farquad", "Shrek"].sample
     super(marker)
   end
 
@@ -187,10 +188,10 @@ class TTTGame
   attr_accessor :current_marker, :scoreboard
 
   def initialize
-    @@comp_marker = "O"
+    @@comp_marker = nil
     @board = Board.new
-    @human = Player.new()
-    @comp = Computer.new(TTTGame.comp_marker, @board)
+    @human = Player.new
+    @comp = Computer.new(@@comp_marker, @board)
     @first_to_move = nil
     @current_marker = nil
     @scoreboard = [@human, @comp]
@@ -200,31 +201,15 @@ class TTTGame
     @@human_marker
   end
 
-  def self.human_marker=(value)
-    @@human_marker = value
-  end
-
   def self.comp_marker
     @@comp_marker
-  end
-
-  def self.comp_marker=(value)
-    @@comp_marker = value
-  end
-
-  def computer_picks_marker
-    if TTTGame.human_marker == "O"
-      TTTGame.comp_marker = "*"
-    end
-    comp.marker = TTTGame.comp_marker
   end
 
   def play
     clear
     display_welcome_message
     ask_for_name
-    human_picks_marker
-    computer_picks_marker
+    players_pick_markers
     determine_who_goes_first
     main_game
     display_goodbye_message
@@ -244,12 +229,23 @@ class TTTGame
     end
   end
 
-  def player_move
-    loop do
-      current_player_moves
-      break if board.someone_won? || board.full?
-      clear_screen_and_display_board if human_turn?
-    end
+  def players_pick_markers
+    human_picks_marker
+    computer_picks_marker
+  end
+
+  def human_picks_marker
+    @@human_marker = ask_human_to_pick_marker
+    human.marker = @@human_marker
+  end
+
+  def computer_picks_marker
+    @@comp_marker = if @@human_marker == ("O")
+                      "*"
+                    else
+                      "O"
+                    end
+    comp.marker = @@comp_marker
   end
 
   def display_welcome_message
@@ -280,9 +276,22 @@ class TTTGame
     answer
   end
 
-  def human_picks_marker
-    TTTGame.human_marker = ask_human_to_pick_marker
-    human.marker = TTTGame.human_marker
+  def ask_who_should_decide_first_mover
+    puts ""
+    puts "Who should decide who goes first?"
+    puts ""
+    puts "Type 1 if you want to choose."
+    puts "Type 2 to let the computer choose."
+  end
+
+  def determine_who_goes_first
+    ask_who_should_decide_first_mover
+    decision_maker = user_answer
+    if decision_maker == HUMAN_ID
+      human_decision
+    elsif decision_maker == COMPUTER_ID
+      computer_decision
+    end
   end
 
   def ask_who_goes_first
@@ -305,19 +314,11 @@ class TTTGame
 
   def assign_move_markers_to_answer(answer)
     if answer == HUMAN_ID
-      @first_to_move = TTTGame.human_marker
+      @first_to_move = @@human_marker
     elsif answer == COMPUTER_ID
-      @first_to_move = TTTGame.comp_marker
+      @first_to_move = @@comp_marker
     end
     @current_marker = @first_to_move
-  end
-
-  def ask_who_should_decide_first_mover
-    puts ""
-    puts "Who should decide who goes first?"
-    puts ""
-    puts "Type 1 if you want to choose."
-    puts "Type 2 to let the computer choose."
   end
 
   def user_answer
@@ -328,16 +329,6 @@ class TTTGame
       puts "Sorry, that's not a valid answer."
     end
     answer
-  end
-
-  def determine_who_goes_first
-    ask_who_should_decide_first_mover
-    decision_maker = user_answer
-    if decision_maker == HUMAN_ID
-      human_decision
-    elsif decision_maker == COMPUTER_ID
-      computer_decision
-    end
   end
 
   def human_decision
@@ -375,30 +366,38 @@ class TTTGame
   end
 
   def add_point_to_winner
-    if board.winning_marker == TTTGame.human_marker
+    if board.winning_marker == @@human_marker
       scoreboard[0].score += 1
-    elsif board.winning_marker == TTTGame.comp_marker
+    elsif board.winning_marker == @@comp_marker
       scoreboard[1].score += 1
     end
-  end
-
-  def current_player_moves
-    if current_marker == TTTGame.human_marker
-      human_moves
-      @current_marker = TTTGame.comp_marker
-    elsif current_marker == TTTGame.comp_marker
-      computer_moves
-      @current_marker = TTTGame.human_marker
-    end
-  end
-
-  def human_turn?
-    current_marker == TTTGame.human_marker
   end
 
   def joinor(keys, delimiter = ", ", word = "or")
     return keys.first if keys.size == 1
     keys[0..-2].join(delimiter).concat(delimiter) + word + " " + keys.last.to_s
+  end
+
+  def player_move
+    loop do
+      current_player_moves
+      break if board.someone_won? || board.full?
+      clear_screen_and_display_board if human_turn?
+    end
+  end
+
+  def current_player_moves
+    if current_marker == @@human_marker
+      human_moves
+      @current_marker = @@comp_marker
+    elsif current_marker == @@comp_marker
+      computer_moves
+      @current_marker = @@human_marker
+    end
+  end
+
+  def human_turn?
+    current_marker == @@human_marker
   end
 
   def human_moves
