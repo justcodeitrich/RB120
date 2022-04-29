@@ -97,7 +97,7 @@ class Square
   end
 
   def computer_marker?
-    marker == TTTGame::COMPUTER_MARKER
+    marker == TTTGame.comp_marker
   end
 end
 
@@ -180,7 +180,6 @@ class Computer < Player
 end
 
 class TTTGame
-  COMPUTER_MARKER = "O"
   POINTS_TO_WIN = 5
   HUMAN_ID = 1
   COMPUTER_ID = 2
@@ -188,9 +187,10 @@ class TTTGame
   attr_accessor :current_marker, :scoreboard
 
   def initialize
+    @@comp_marker = "O"
     @board = Board.new
     @human = Player.new()
-    @comp = Computer.new(COMPUTER_MARKER, @board)
+    @comp = Computer.new(TTTGame.comp_marker, @board)
     @first_to_move = nil
     @current_marker = nil
     @scoreboard = [@human, @comp]
@@ -204,11 +204,27 @@ class TTTGame
     @@human_marker = value
   end
 
+  def self.comp_marker
+    @@comp_marker
+  end
+
+  def self.comp_marker=(value)
+    @@comp_marker = value
+  end
+
+  def computer_picks_marker
+    if TTTGame.human_marker == "O"
+      TTTGame.comp_marker = "*"
+    end
+    comp.marker = TTTGame.comp_marker
+  end
+
   def play
     clear
     display_welcome_message
     ask_for_name
     human_picks_marker
+    computer_picks_marker
     determine_who_goes_first
     main_game
     display_goodbye_message
@@ -291,7 +307,7 @@ class TTTGame
     if answer == HUMAN_ID
       @first_to_move = TTTGame.human_marker
     elsif answer == COMPUTER_ID
-      @first_to_move = COMPUTER_MARKER
+      @first_to_move = TTTGame.comp_marker
     end
     @current_marker = @first_to_move
   end
@@ -361,7 +377,7 @@ class TTTGame
   def add_point_to_winner
     if board.winning_marker == TTTGame.human_marker
       scoreboard[0].score += 1
-    elsif board.winning_marker == COMPUTER_MARKER
+    elsif board.winning_marker == TTTGame.comp_marker
       scoreboard[1].score += 1
     end
   end
@@ -369,8 +385,8 @@ class TTTGame
   def current_player_moves
     if current_marker == TTTGame.human_marker
       human_moves
-      @current_marker = COMPUTER_MARKER
-    elsif current_marker == COMPUTER_MARKER
+      @current_marker = TTTGame.comp_marker
+    elsif current_marker == TTTGame.comp_marker
       computer_moves
       @current_marker = TTTGame.human_marker
     end
