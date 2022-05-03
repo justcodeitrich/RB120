@@ -257,7 +257,7 @@ class TTTGame
     puts "Please type your name."
     answer = nil
     loop do
-      answer = gets.chomp.strip
+      answer = gets.chomp
       break unless answer =~ /[^a-zA-Z]/
       puts "Sorry, that's an invalid input."
     end
@@ -270,7 +270,7 @@ class TTTGame
     loop do
       puts "Type in any single character."
       answer = gets.chomp
-      break if answer.size == 1
+      break if answer.size == 1 && !answer.strip.empty?
       puts "Sorry, that's an invalid marker."
     end
     answer
@@ -440,12 +440,12 @@ class TTTGame
     return true unless scoreboard.any? { |obj| obj.score == POINTS_TO_WIN }
     answer = nil
     loop do
-      puts "Would you like to play again? (y/n)"
+      puts "Would you like to play again? ( (y)es / (n)o )"
       answer = gets.chomp.downcase
-      break if %w(y n).include? answer
+      break if %w(y n yes no).include? answer
       puts "Sorry, that's not a valid answer."
     end
-    answer == "y"
+    answer == "y" || answer == "yes"
   end
 
   def clear
