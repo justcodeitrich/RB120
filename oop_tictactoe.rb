@@ -368,7 +368,7 @@ class TTTGame
   def add_point_to_winner
     if board.winning_marker == @@human_marker
       scoreboard[0].score += 1
-    elsif board.winning_marker == @@comp_marker
+    else 
       scoreboard[1].score += 1
     end
   end
@@ -440,7 +440,7 @@ class TTTGame
     return true unless scoreboard.any? { |obj| obj.score == POINTS_TO_WIN }
     answer = nil
     loop do
-      puts "Would you like to play again? ( (y)es / (n)o )"
+      puts "Would you like to play again? (yes/no)"
       answer = gets.chomp.downcase
       break if %w(y n yes no).include? answer
       puts "Sorry, that's not a valid answer."
