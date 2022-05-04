@@ -223,6 +223,7 @@ class TTTGame
       player_move
       add_point_to_winner
       display_result
+      ask_who_goes_first_next_round
       break unless play_again?
       reset
       prepare_next_game_series
@@ -331,6 +332,10 @@ class TTTGame
     answer
   end
 
+  def ask_who_goes_first_next_round
+    human_decision if scoreboard.all? { |obj| obj.score != POINTS_TO_WIN }
+  end
+
   def human_decision
     ask_who_goes_first
     human_choice = user_answer
@@ -368,7 +373,7 @@ class TTTGame
   def add_point_to_winner
     if board.winning_marker == @@human_marker
       scoreboard[0].score += 1
-    else 
+    elsif board.winning_marker == @@comp_marker
       scoreboard[1].score += 1
     end
   end
