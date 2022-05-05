@@ -1,4 +1,3 @@
-require 'pry'
 class Board
   attr_reader :squares
 
@@ -177,7 +176,98 @@ class Computer < Player
   end
 end
 
+module Displayable
+  def display_welcome_message
+    puts "Welcome to Tic Tac Toe!"
+    puts "First to #{TTTGame::POINTS_TO_WIN} wins the game!"
+  end
+
+  def ask_for_name
+    puts "Please type your name."
+    answer = nil
+    loop do
+      answer = gets.chomp
+      break unless answer =~ /[^a-zA-Z]/
+      puts "Sorry, that's an invalid input."
+    end
+    @human.name = answer
+  end
+
+  def ask_human_to_pick_marker
+    puts "Pick your marker!"
+    answer = nil
+    loop do
+      puts "Type in any single character."
+      answer = gets.chomp
+      break if answer.size == 1 && !answer.strip.empty?
+      puts "Sorry, that's an invalid marker."
+    end
+    answer
+  end
+
+  def ask_who_should_decide_first_mover
+    puts ""
+    puts "Who should decide who goes first?"
+    puts ""
+    puts "Type 1 if you want to choose."
+    puts "Type 2 to let the computer choose."
+  end
+
+  def ask_who_goes_first
+    puts ""
+    puts "Who should go first?"
+    puts ""
+    puts "Type 1 if you want to go first."
+    puts "Type 2 to let the computer go first."
+  end
+
+  def display_who_goes_first(answer)
+    clear
+    if answer == TTTGame::HUMAN_ID
+      puts "#{human.name} go first!"
+    else
+      puts "#{comp.name} the computer goes first!"
+    end
+    sleep 1.5
+  end
+
+  # rubocop:disable Layout/LineLength
+
+  def display_scoreboard
+    puts ""
+    puts "#{human.name}'s score: #{scoreboard[0].score} | #{comp.name}'s score: #{scoreboard[1].score}"
+  end
+
+  def display_board
+    puts "#{human.name} is playing #{human.marker}. #{comp.name} is playing #{comp.marker}."
+    display_scoreboard
+    puts ""
+    board.draw
+    puts ""
+  end
+
+  # rubocop:enable Layout/LineLength
+
+  def display_result
+    clear_screen_and_display_board
+    case board.winning_marker
+    when human.marker
+      puts "#{human.name} won!"
+    when comp.marker
+      puts "#{comp.name} won!"
+    else
+      puts "It's a tie!"
+    end
+    sleep 1.2
+  end
+
+  def display_goodbye_message
+    puts "Thanks for playing. Goodbye!"
+  end
+end
+
 class TTTGame
+  include Displayable
   POINTS_TO_WIN = 5
   HUMAN_ID = 1
   COMPUTER_ID = 2
@@ -246,42 +336,6 @@ class TTTGame
     comp.marker = @@comp_marker
   end
 
-  def display_welcome_message
-    puts "Welcome to Tic Tac Toe!"
-    puts "First to #{POINTS_TO_WIN} wins the game!"
-  end
-
-  def ask_for_name
-    puts "Please type your name."
-    answer = nil
-    loop do
-      answer = gets.chomp
-      break unless answer =~ /[^a-zA-Z]/
-      puts "Sorry, that's an invalid input."
-    end
-    @human.name = answer
-  end
-
-  def ask_human_to_pick_marker
-    puts "Pick your marker!"
-    answer = nil
-    loop do
-      puts "Type in any single character."
-      answer = gets.chomp
-      break if answer.size == 1 && !answer.strip.empty?
-      puts "Sorry, that's an invalid marker."
-    end
-    answer
-  end
-
-  def ask_who_should_decide_first_mover
-    puts ""
-    puts "Who should decide who goes first?"
-    puts ""
-    puts "Type 1 if you want to choose."
-    puts "Type 2 to let the computer choose."
-  end
-
   def determine_who_goes_first
     ask_who_should_decide_first_mover
     decision_maker = user_answer
@@ -290,33 +344,6 @@ class TTTGame
     elsif decision_maker == COMPUTER_ID
       computer_decision
     end
-  end
-
-  def ask_who_goes_first
-    puts ""
-    puts "Who should go first?"
-    puts ""
-    puts "Type 1 if you want to go first."
-    puts "Type 2 to let the computer go first."
-  end
-
-  def display_who_goes_first(answer)
-    clear
-    if answer == HUMAN_ID
-      puts "#{human.name} go first!"
-    else
-      puts "#{comp.name} the computer goes first!"
-    end
-    sleep 1.5
-  end
-
-  def assign_move_markers_to_answer(answer)
-    if answer == HUMAN_ID
-      @first_to_move = @@human_marker
-    elsif answer == COMPUTER_ID
-      @first_to_move = @@comp_marker
-    end
-    @current_marker = @first_to_move
   end
 
   def user_answer
@@ -346,25 +373,13 @@ class TTTGame
     display_who_goes_first(comp_choice)
   end
 
-  # rubocop:disable Layout/LineLength
-
-  def display_scoreboard
-    puts ""
-    puts "#{human.name}'s score: #{scoreboard[0].score} | #{comp.name}'s score: #{scoreboard[1].score}"
-  end
-
-  def display_board
-    puts "#{human.name} is playing #{human.marker}. #{comp.name} is playing #{comp.marker}."
-    display_scoreboard
-    puts ""
-    board.draw
-    puts ""
-  end
-
-  # rubocop:enable Layout/LineLength
-
-  def display_goodbye_message
-    puts "Thanks for playing. Goodbye!"
+  def assign_move_markers_to_answer(answer)
+    if answer == HUMAN_ID
+      @first_to_move = @@human_marker
+    elsif answer == COMPUTER_ID
+      @first_to_move = @@comp_marker
+    end
+    @current_marker = @first_to_move
   end
 
   def add_point_to_winner
@@ -423,19 +438,6 @@ class TTTGame
     else
       comp.select_random_square
     end
-  end
-
-  def display_result
-    clear_screen_and_display_board
-    case board.winning_marker
-    when human.marker
-      puts "#{human.name} won!"
-    when comp.marker
-      puts "#{comp.name} won!"
-    else
-      puts "It's a tie!"
-    end
-    sleep 1.2
   end
 
   def play_again?
