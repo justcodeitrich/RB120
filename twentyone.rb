@@ -37,6 +37,8 @@ class Participant
     end
   end
 
+
+
   # cards 
   # hit
   # total value of hand
@@ -48,6 +50,10 @@ class Participant
 end
 
 class Dealer < Participant
+  def show_one_card_of_hand
+    revealed_card = self.hand[0]
+    puts "#{name} has a #{revealed_card[0]} of #{revealed_card[1]} and one hidden card."
+  end
   # 17? - check to see if hand total is 17 or less
 end
 
@@ -69,6 +75,34 @@ class Game
     2.times {dealer.hand << deck.deal_one_card}
   end
 
+  def play 
+    deck.shuffle_cards
+    deal_hands
+    player.show_hand
+    dealer.show_one_card_of_hand
+    ask_hit_or_stay
+    player_hits 
+    player.show_hand
+  end
+
+  def ask_hit_or_stay
+    answer = nil 
+    loop do 
+      puts "Would you like to hit or stay? Type: (h)it or (s)tay"
+      answer = gets.chomp
+      break if %w(h hit s stay).include?(answer)
+      puts "Sorry, that's not a valid answer."
+    end
+    answer
+  end
+
+  def player_hits
+    player.hand << deck.deal_one_card
+  end
+
+
+
+
   # deal hands
   # display player's hands and only one card of dealer hand
   # ask player to hit or stay
@@ -79,9 +113,10 @@ class Game
   # display to player who wins and their winning hand 
 end
 
-game = Game.new 
-game.deck.shuffle_cards
-game.deal_hands
+game = Game.new
+game.play 
 
-game.player.show_hand
-game.dealer.show_hand
+
+
+
+
