@@ -228,7 +228,8 @@ module Displayable
     else
       puts "#{comp.name} the computer goes first!"
     end
-    sleep 1.5
+    puts "press any key to continue"
+    gets
   end
 
   # rubocop:disable Layout/LineLength
