@@ -1,3 +1,4 @@
+require 'pry'
 class Board
   attr_reader :squares
 
@@ -122,27 +123,17 @@ class Computer < Player
   end
 
   def under_threat?
-    !!defensive_piece
+    !!off_def_piece("defense")
   end
 
   def possible_win?
-    !!offensive_piece
+    !!off_def_piece("offense")
   end
 
-  def offensive_piece
+  def off_def_piece(strategy)
     Board::WINNING_LINES.each do |line|
       squares = board.squares.values_at(*line)
-      if two_consecutive_comp_pieces?(squares)
-        line.each { |key| return key if board.squares[key].marker == " " }
-      end
-    end
-    nil
-  end
-
-  def defensive_piece
-    Board::WINNING_LINES.each do |line|
-      squares = board.squares.values_at(*line)
-      if two_consecutive_human_pieces?(squares)
+      if two_consecutive_player_pieces?(squares, strategy)
         line.each { |key| return key if board.squares[key].marker == " " }
       end
     end
@@ -150,11 +141,11 @@ class Computer < Player
   end
 
   def place_defensive_piece
-    board[defensive_piece] = (marker)
+    board[off_def_piece("defense")] = (marker)
   end
 
   def place_offensive_piece
-    board[offensive_piece] = (marker)
+    board[off_def_piece("offense")] = (marker)
   end
 
   def select_random_square
@@ -167,16 +158,22 @@ class Computer < Player
 
   private
 
-  def two_consecutive_human_pieces?(squares)
-    return false if squares.any?(&:computer_marker?)
-    markers = squares.select(&:human_marker?).collect(&:marker)
-    markers.size == 2
+  def two_consecutive_player_pieces?(squares, strategy)
+    if strategy == 'offense'
+      advantage_of_two_comp_pieces?(squares)
+    else
+      threat_of_two_human_pieces?(squares)
+    end
   end
 
-  def two_consecutive_comp_pieces?(squares)
+  def threat_of_two_human_pieces?(squares)
+    return false if squares.any?(&:computer_marker?)
+    squares.select(&:human_marker?).size == 2
+  end
+
+  def advantage_of_two_comp_pieces?(squares)
     return false if squares.any?(&:human_marker?)
-    markers = squares.select(&:computer_marker?).collect(&:marker)
-    markers.size == 2
+    squares.select(&:computer_marker?).size == 2
   end
 end
 
