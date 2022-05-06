@@ -63,7 +63,7 @@ class Participant
     end
   end
 
-  def show_hand
+  def show_cards_in_hand
     puts "#{name} has"
     hand.each do |value, suit|
       puts "The #{value} of #{suit}."
@@ -85,11 +85,17 @@ class Participant
 end
 
 class Dealer < Participant
+  DEALER_TOTAL_MINIMUM = 17
+
   def show_one_card_of_hand
     revealed_card = hand[0]
     puts "#{name} has a #{revealed_card[0]} of #{revealed_card[1]} and one hidden card."
   end
-  # 17? - check to see if hand total is 17 or less
+  
+  def hand_total_below_minimum?
+    binding.pry
+    total_hand_value < DEALER_TOTAL_MINIMUM
+  end
 end
 
 class Player < Participant
@@ -103,9 +109,10 @@ class Game
     @deck = Deck.new
     @player = Player.new("Tom")
     @dealer = Dealer.new("Jerry")
+    @player_busted = false
   end
 
-  def deal_hands
+  def deal_two_cards_to_all_players
     2.times do
       player.hand << hit
       dealer.hand << hit
@@ -113,15 +120,21 @@ class Game
   end
 
   def play
-    deck.shuffle_cards
-    deal_hands
-    player.show_hand
-    player.calculate_hand_value
-    puts player.total_hand_value
-    dealer.show_one_card_of_hand
+    game_setup
     player_sequence
+    dealer_sequence
+    # method to check if player busted. If player busted, go to end game
   end
   
+  def game_setup 
+    deck.shuffle_cards
+    deal_two_cards_to_all_players
+    player.show_cards_in_hand
+    player.calculate_hand_value
+    dealer.calculate_hand_value
+    player.display_hand_total
+    dealer.show_one_card_of_hand
+  end
   # deal initial hands
   # player loop
     # show hand
@@ -139,8 +152,10 @@ class Game
   def player_sequence
     loop do 
       answer = ask_hit_or_stay
+      break if answer == "s" || answer == "stay"
       if answer == "h" || answer == "hit"
         player.hand << hit # give player card
+        player.show_cards_in_hand
         player.calculate_hand_value # calculate new total
         player.display_hand_total # display total value
         if player.bust?
@@ -150,6 +165,24 @@ class Game
         end
       end
       # loops back to ask_hit_or_stay
+    end
+  end
+
+  def dealer_sequence 
+    dealer.show_cards_in_hand
+    dealer.display_hand_total
+    loop do 
+      if dealer.bust?
+        puts "dealer busted with a hand of #{dealer.total_hand_value}!"
+        break
+      elsif dealer.hand_total_below_minimum?
+        dealer.hand << hit
+        dealer.show_cards_in_hand
+        dealer.calculate_hand_value
+      else 
+        puts "Dealer stays with a final hand is a value of #{dealer.total_hand_value}."
+        break
+      end
     end
   end
 
