@@ -1,7 +1,7 @@
 require 'pry'
 class Deck
-  SUITS = %w(H S D C)
-  VALUES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K', 'A']
+  SUITS = %w(Hearts Spades Diamonds Clubs)
+  VALUES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King', 'Ace']
 
   attr_reader :all_cards
 
@@ -24,11 +24,12 @@ end
 
 class Player
   HAND_VALUE_LIMIT = 21
-  attr_reader :hand, :name, :total_hand_value
+  attr_reader :hand, :total_hand_value
+  attr_accessor :name
 
   def initialize(name)
     @hand = []
-    @name = name
+    @name = name + " the dealer"
     @total_hand_value = 0
   end
 
@@ -46,10 +47,10 @@ class Player
   def card_to_value(card)
     face = card.first
     case face
-    when "J" then 10
-    when "Q" then 10
-    when "K" then 10
-    when "A" then ace_to_value
+    when "Jack" then 10
+    when "Queen" then 10
+    when "King" then 10
+    when "Ace" then ace_to_value
     else face
     end
   end
@@ -65,7 +66,7 @@ class Player
   def show_cards_in_hand
     puts "#{name} has"
     hand.each do |value, suit|
-      puts "The #{value} of #{suit}."
+      puts "#{value} of #{suit}."
     end
   end
 
@@ -94,20 +95,15 @@ class Game
 
   def initialize
     @deck = Deck.new
-    @player = Player.new("Player")
-    @dealer = Dealer.new("Dealer")
+    @player = Player.new(" ")
+    @dealer = Dealer.new(["Joe", "Moe", "Roe"].sample)
+    @messages = 
     @player_busted = false
     @dealer_busted = false
   end
 
-  def deal_two_cards_to_all_players
-    2.times do
-      player.hand << hit
-      dealer.hand << hit
-    end
-  end
-
   def play
+    player.name = ask_for_name
     game_setup
     player_full_sequence
     dealer_full_sequence
@@ -115,6 +111,7 @@ class Game
   end
 
   def game_setup
+    clear
     deck.shuffle_cards
     deal_two_cards_to_all_players
     player.calculate_hand_value
@@ -124,8 +121,30 @@ class Game
     dealer.show_one_card_of_hand
   end
 
+  def deal_two_cards_to_all_players
+    2.times do
+      player.hand << hit
+      dealer.hand << hit
+    end
+  end
+
+  def ask_hit_or_stay
+    answer = nil
+    loop do
+      puts "Would you like to hit or stay? Type: (h)it or (s)tay"
+      answer = gets.chomp
+      break if %w(h hit s stay).include?(answer)
+      puts "Sorry, that's not a valid answer."
+    end
+    answer
+  end
+
   def hit
     deck.deal_one_card
+  end
+
+  def clear 
+    system('clear')
   end
 
   def player_busted?
@@ -149,13 +168,13 @@ class Game
       answer = ask_hit_or_stay
       break if STAY.include?(answer)
       if HIT.include?(answer)
-        hit_sequence
+        player_hit_sequence
         break if player_busted?
       end
     end
   end
 
-  def hit_sequence
+  def player_hit_sequence
     player.hand << hit
     player.show_cards_in_hand
     player.calculate_hand_value
@@ -165,8 +184,12 @@ class Game
   def dealer_full_sequence
     return if player_busted?
     dealer_reveals_hand
+    dealer_play_loop
+  end
+
+  def dealer_play_loop
     loop do
-      return puts "Dealer busted with a hand of #{dealer.total_hand_value}!" if dealer_busted?
+      return puts "#{dealer.name} busted with a hand of #{dealer.total_hand_value}!" if dealer_busted?
       if dealer.hand_total_below_minimum?
         dealer_hit_sequence
       else
@@ -176,8 +199,19 @@ class Game
     end
   end
 
-  def dealer_stays_message 
-    puts "Dealer stays with a total value of #{dealer.total_hand_value}."
+  def ask_for_name
+    puts "What is your name?"
+    answer = nil
+    loop do 
+      answer = gets.chomp
+      break if answer.downcase =~ /[a-zA-Z]/
+      puts "Sorry that's not a valid answer."
+    end
+    answer
+  end
+
+  def dealer_stays_message
+    puts "#{dealer.name} stays with a total value of #{dealer.total_hand_value}."
   end
 
   def dealer_reveals_hand
@@ -191,26 +225,15 @@ class Game
     dealer.calculate_hand_value
   end
 
-  def ask_hit_or_stay
-    answer = nil
-    loop do
-      puts "Would you like to hit or stay? Type: (h)it or (s)tay"
-      answer = gets.chomp
-      break if %w(h hit s stay).include?(answer)
-      puts "Sorry, that's not a valid answer."
-    end
-    answer
-  end
-
   def determine_winner
     return puts "Sorry you busted! You lose" if player_busted?
-    return puts "Dealer busted! You win!" if dealer_busted?
+    return puts "#{dealer.name} busted! You win!" if dealer_busted?
     if player.total_hand_value == dealer.total_hand_value
       puts "It's a tie!"
     elsif player.total_hand_value > dealer.total_hand_value
-      puts "Player wins!"
+      puts "You win!"
     else
-      puts "Dealer wins!"
+      puts "#{dealer.name} the dealer wins!"
     end
   end
 end
