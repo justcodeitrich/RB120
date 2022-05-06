@@ -24,11 +24,39 @@ end
 
 # ----------
 class Participant
-  attr_reader :hand, :name
+  attr_reader :hand, :name, :total_hand_value
 
   def initialize(name)
     @hand = []
     @name = name
+    @total_hand_value = 0
+  end
+
+  def calculate_hand_value
+    @total_hand_value = 0 
+    hand.each do |cards|
+      @total_hand_value += card_to_value(cards)
+    end
+  end
+
+  def card_to_value(card)
+    face = card.first
+    case face
+    when "J" then 10
+    when "Q" then 10
+    when "K" then 10 
+    when "A" then ace_to_value(face)
+    else face 
+    end
+    # returns a number
+  end
+
+  def ace_to_value(face)
+    if @total_hand_value + 11 > 21
+      1
+    else
+      11
+    end
   end
 
   def show_hand
@@ -80,9 +108,13 @@ class Game
     deck.shuffle_cards
     deal_hands
     player.show_hand
+    player.calculate_hand_value
+    puts player.total_hand_value
     dealer.show_one_card_of_hand
     ask_hit_or_stay
     player.hand << hit
+    player.calculate_hand_value
+    puts player.total_hand_value
     player.show_hand
   end
 
