@@ -109,8 +109,8 @@ class Game
 
   def play
     game_setup
-    player_sequence
-    dealer_sequence
+    player_full_sequence
+    dealer_full_sequence
     determine_winner
   end
 
@@ -130,7 +130,7 @@ class Game
 
   def player_busted?
     if player.total_hand_value > Player::HAND_VALUE_LIMIT
-      @player_busted = true 
+      @player_busted = true
     else
       false
     end
@@ -138,13 +138,13 @@ class Game
 
   def dealer_busted?
     if dealer.total_hand_value > Player::HAND_VALUE_LIMIT
-      @dealer_busted = true 
+      @dealer_busted = true
     else
       false
     end
   end
 
-  def player_sequence
+  def player_full_sequence
     loop do
       answer = ask_hit_or_stay
       break if STAY.include?(answer)
@@ -162,23 +162,33 @@ class Game
     player.display_hand_total
   end
 
-  def dealer_sequence
+  def dealer_full_sequence
     return if player_busted?
-    dealer.show_cards_in_hand
-    dealer.display_hand_total
+    dealer_reveals_hand
     loop do
-      if dealer_busted?
-        puts "dealer busted with a hand of #{dealer.total_hand_value}!"
-        break
-      elsif dealer.hand_total_below_minimum?
-        dealer.hand << hit
-        dealer.show_cards_in_hand
-        dealer.calculate_hand_value
+      return puts "Dealer busted with a hand of #{dealer.total_hand_value}!" if dealer_busted?
+      if dealer.hand_total_below_minimum?
+        dealer_hit_sequence
       else
-        puts "Dealer stays with a final hand is a value of #{dealer.total_hand_value}."
+        dealer_stays_message
         break
       end
     end
+  end
+
+  def dealer_stays_message 
+    puts "Dealer stays with a total value of #{dealer.total_hand_value}."
+  end
+
+  def dealer_reveals_hand
+    dealer.show_cards_in_hand
+    dealer.display_hand_total
+  end
+
+  def dealer_hit_sequence
+    dealer.hand << hit
+    dealer.show_cards_in_hand
+    dealer.calculate_hand_value
   end
 
   def ask_hit_or_stay
