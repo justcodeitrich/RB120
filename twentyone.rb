@@ -39,6 +39,10 @@ class Participant
     end
   end
 
+  def display_hand_total
+    puts "Your cards total to #{@total_hand_value} "
+  end
+
   def card_to_value(card)
     face = card.first
     case face
@@ -64,6 +68,10 @@ class Participant
     hand.each do |value, suit|
       puts "The #{value} of #{suit}."
     end
+  end
+
+  def bust?
+    @total_hand_value > 21
   end
 
   # cards
@@ -111,15 +119,38 @@ class Game
     player.calculate_hand_value
     puts player.total_hand_value
     dealer.show_one_card_of_hand
-    ask_hit_or_stay
-    player.hand << hit
-    player.calculate_hand_value
-    puts player.total_hand_value
-    player.show_hand
+    player_sequence
   end
+  
+  # deal initial hands
+  # player loop
+    # show hand
+    # calculate value
+    # display hand value
+    # ask hit or stay
+    # hit until stay or bust
+    # break if stay
+  # dealer loop
 
   def hit
     deck.deal_one_card
+  end
+
+  def player_sequence
+    loop do 
+      answer = ask_hit_or_stay
+      if answer == "h" || answer == "hit"
+        player.hand << hit # give player card
+        player.calculate_hand_value # calculate new total
+        player.display_hand_total # display total value
+        if player.bust?
+          puts "sorry you lose with value of #{player.total_hand_value}"
+          break 
+          # sorry you lose with a hand over 21 - break out of game to the end
+        end
+      end
+      # loops back to ask_hit_or_stay
+    end
   end
 
   def ask_hit_or_stay
@@ -132,6 +163,8 @@ class Game
     end
     answer
   end
+
+
 
   # deal hands
   # display player's hands and only one card of dealer hand
