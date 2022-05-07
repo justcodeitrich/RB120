@@ -67,6 +67,8 @@ module Printable
 
   def print_stay_message(player)
     puts "#{player.name} decides to stay!"
+    sleep(SLEEP_TIMER)
+    clear
   end
 
   def print_invalid_answer
@@ -75,6 +77,8 @@ module Printable
 
   def print_player_draws_card(drawn_card, player)
     puts "#{player.name} draws a #{drawn_card.first} of #{drawn_card.last}."
+    sleep(SLEEP_TIMER)
+    clear
   end
 
   def print_winner(player=nil)
@@ -99,6 +103,10 @@ module Printable
       puts "  #{value} of #{suit}"
     end
     puts ""
+  end
+
+  def print_goodbye
+    puts "Thanks for playing Twenty One! Goodbye!"
   end
 
   # rubocop:disable Layout/LineLength
@@ -216,6 +224,7 @@ class Game
     player_full_sequence
     dealer_full_sequence
     determine_winner
+    print_goodbye
   end
 
   def prepare_player
@@ -223,6 +232,8 @@ class Game
     ask_for_name
     print_welcome_message
     print_game_rules
+    press_any_key
+    clear
   end
 
   def game_setup
@@ -288,19 +299,24 @@ class Game
   end
 
   def player_hit_sequence
+    clear
     player.hand << hit
     print_player_draws_card(player.hand.last, player)
     print_cards_in_hand(player)
     player.calculate_hand_value
     print_hand_total(player)
+    press_any_key
   end
 
   def dealer_full_sequence
     return if player_busted?(player)
+    clear
     print_dealers_turn
+    sleep(SLEEP_TIMER)
     print_dealer_hand_reveal
     print_cards_in_hand(dealer)
     print_hand_total(dealer)
+    press_any_key
     dealer_play_loop
   end
 
@@ -323,11 +339,13 @@ class Game
   end
 
   def dealer_hit_sequence
+    clear
     dealer.hand << hit
+    dealer.calculate_hand_value
     print_player_draws_card(dealer.hand.last, dealer)
     print_cards_in_hand(dealer)
     print_hand_total(dealer)
-    dealer.calculate_hand_value
+    press_any_key
   end
 
   def determine_winner
