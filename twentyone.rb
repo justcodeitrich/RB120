@@ -18,15 +18,6 @@ module Printable
     puts "Dealer's turn!"
   end
 
-  def print_dealer_hand_reveal
-    hidden_card = dealer.hand.last
-    puts "#{dealer.name} flips over the hidden card: A #{hidden_card.first} of #{hidden_card.last}!"
-  end
-
-  def print_dealer_stays
-    puts "#{dealer.name} stays with a total value of #{dealer.total_hand_value}."
-  end
-
   def print_ask_user_name
     puts "What is your name?"
   end
@@ -51,11 +42,6 @@ module Printable
     puts "#{player.name} went over #{Player::HAND_VALUE_LIMIT} and busted!"
   end
 
-  def print_one_of_dealers_cards
-    revealed_card = dealer.hand[0]
-    puts "#{dealer.name} has a #{revealed_card[0]} of #{revealed_card[1]} and one hidden card."
-  end
-
   def print_hand_total(player)
     puts "#{player.name}'s cards total to #{player.total_hand_value} "
   end
@@ -66,6 +52,22 @@ module Printable
       puts "#{value} of #{suit}"
     end
   end
+
+  # rubocop:disable Layout/LineLength
+  def print_one_of_dealers_cards
+    revealed_card = dealer.hand[0]
+    puts "#{dealer.name} has a #{revealed_card[0]} of #{revealed_card[1]} and one hidden card."
+  end
+
+  def print_dealer_hand_reveal
+    hidden_card = dealer.hand.last
+    puts "#{dealer.name} flips over the hidden card: A #{hidden_card.first} of #{hidden_card.last}!"
+  end
+
+  def print_dealer_stays
+    puts "#{dealer.name} stays with a total value of #{dealer.total_hand_value}."
+  end
+  # rubocop:enable Layout/LineLength
 end
 
 class Deck
@@ -94,12 +96,13 @@ end
 class Player
   HAND_VALUE_LIMIT = 21
   attr_reader :hand, :total_hand_value
-  attr_accessor :name
+  attr_accessor :name, :busted
 
   def initialize(name)
     @hand = []
     @name = name + " the dealer"
     @total_hand_value = 0
+    @busted = false
   end
 
   def calculate_hand_value
@@ -151,8 +154,6 @@ class Game
     @deck = Deck.new
     @player = Player.new(" ")
     @dealer = Dealer.new(["Tom", "Jerry", "Roe"].sample)
-    @player_busted = false
-    @dealer_busted = false
   end
 
   def play
@@ -181,6 +182,17 @@ class Game
     end
   end
 
+  def ask_for_name
+    print_ask_user_name
+    answer = nil
+    loop do
+      answer = gets.chomp
+      break if answer.downcase =~ /[a-zA-Z]/
+      print_invalid_answer
+    end
+    answer
+  end
+
   def ask_hit_or_stay
     answer = nil
     loop do
@@ -198,23 +210,7 @@ class Game
 
   def player_busted?(player)
     if player.total_hand_value > Player::HAND_VALUE_LIMIT
-      @player_busted = true
-    else
-      false
-    end
-  end
-
-  def player_busted?
-    if player.total_hand_value > Player::HAND_VALUE_LIMIT
-      @player_busted = true
-    else
-      false
-    end
-  end
-
-  def dealer_busted?
-    if dealer.total_hand_value > Player::HAND_VALUE_LIMIT
-      @dealer_busted = true
+      player.busted = true
     else
       false
     end
@@ -226,21 +222,21 @@ class Game
       break if STAY.include?(answer)
       if HIT.include?(answer)
         player_hit_sequence
-        break if player_busted?
+        break if player_busted?(player)
       end
     end
   end
 
   def player_hit_sequence
     player.hand << hit
-    hit_message(player)
+    print_player_draws_card(player.hand.last, player)
     print_cards_in_hand(player)
     player.calculate_hand_value
     print_hand_total(player)
   end
 
   def dealer_full_sequence
-    return if player_busted?
+    return if player_busted?(player)
     print_dealers_turn
     print_dealer_hand_reveal
     dealer_play_loop
@@ -248,7 +244,7 @@ class Game
 
   def dealer_play_loop
     loop do
-      return if dealer_busted?
+      return if player_busted?(dealer)
       if dealer.hand_total_below_minimum?
         dealer_hit_sequence
       else
@@ -258,24 +254,6 @@ class Game
     end
   end
 
-  def ask_for_name
-    print_ask_user_name
-    answer = nil
-    loop do
-      answer = gets.chomp
-      break if answer.downcase =~ /[a-zA-Z]/
-      print_invalid_answer
-    end
-    answer
-  end
-
-  def hit_message(player)
-    drawn_card = player.hand.last
-    print_player_draws_card(drawn_card, player)
-    press_any_key
-    clear
-  end
-
   def dealer_reveals_hand
     print_cards_in_hand(dealer)
     print_hand_total(dealer)
@@ -283,14 +261,14 @@ class Game
 
   def dealer_hit_sequence
     dealer.hand << hit
-    hit_message(dealer)
+    print_player_draws_card(dealer.hand.last, dealer)
     print_cards_in_hand(dealer)
     dealer.calculate_hand_value
   end
 
   def determine_winner
-    return print_busted(player) if player_busted?
-    return print_busted(dealer) if dealer_busted?
+    return print_busted(player) if player_busted?(player)
+    return print_busted(dealer) if player_busted?(dealer)
     compare_hands_print_winner
   end
 
