@@ -48,6 +48,7 @@ module Printable
 
   def print_game_rules
     puts RULES
+    press_any_key
   end
 
   def print_dealers_turn
@@ -56,6 +57,10 @@ module Printable
 
   def print_ask_user_name
     puts "What is your name?"
+  end
+
+  def print_ask_for_rules
+    puts "Would you like to see the rules? Type (y)es or (n)o."
   end
 
   def print_hit_or_stay
@@ -93,6 +98,7 @@ module Printable
 
   def print_hand_total(player)
     puts "#{player.name}'s cards total to #{player.total_hand_value} "
+    puts ""
   end
 
   def print_cards_in_hand(player)
@@ -101,6 +107,10 @@ module Printable
       puts "  #{value} of #{suit}"
     end
     puts ""
+  end
+
+  def print_play_again
+    puts "Would you like to play again? Type (y)es or (n)o."
   end
 
   def print_goodbye
@@ -171,6 +181,8 @@ class Player
     end
   end
 
+  private
+
   def card_to_value(card)
     face = card.first
     case face
@@ -207,6 +219,8 @@ class Game
   include Printable
   HIT = ['h', 'hit']
   STAY = ['s', 'stay']
+  YES = ['y', 'yes']
+  NO = ['n', 'no']
 
   attr_accessor :deck, :player, :dealer
 
@@ -217,20 +231,36 @@ class Game
   end
 
   def play
-    prepare_player
-    game_setup
-    player_full_sequence
-    dealer_full_sequence
-    determine_winner
+    loop do
+      prepare_player
+      game_setup
+      player_full_sequence
+      dealer_full_sequence
+      determine_winner
+      break unless play_again?
+      reset
+    end
     print_goodbye
+  end
+
+  private
+
+  def ask_to_show_game_rules
+    print_ask_for_rules
+    answer = nil
+    loop do
+      answer = gets.chomp.downcase
+      break if (YES + NO).include?(answer)
+      print_invalid_answer
+    end
+    print_game_rules if answer.start_with?("y")
   end
 
   def prepare_player
     clear
     ask_for_name
     print_welcome_message
-    print_game_rules
-    press_any_key
+    ask_to_show_game_rules
     clear
   end
 
@@ -266,7 +296,7 @@ class Game
     answer = nil
     loop do
       print_hit_or_stay
-      answer = gets.chomp
+      answer = gets.chomp.downcase
       break if (HIT + STAY).include?(answer)
       print_invalid_answer
     end
@@ -325,7 +355,6 @@ class Game
         dealer_hit_sequence
       else
         print_dealer_stays
-        dealer_hit_sequence
         break
       end
     end
@@ -360,6 +389,23 @@ class Game
     else
       print_winner(dealer)
     end
+  end
+
+  def play_again?
+    print_play_again
+    answer = nil
+    loop do
+      answer = gets.chomp.downcase
+      break if (YES + NO).include?(answer)
+      print_invalid_answer
+    end
+    YES.include?(answer)
+  end
+
+  def reset
+    @deck = Deck.new
+    player.hand.clear
+    dealer.hand.clear
   end
 end
 
