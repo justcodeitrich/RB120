@@ -33,6 +33,8 @@ Rules:
 HEREDOC
 
 module Printable
+  SLEEP_TIMER = 2
+
   def press_any_key
     puts "Press any key to continue."
     gets.chomp
@@ -42,22 +44,12 @@ module Printable
     system('clear')
   end
 
-  def wait
-    sleep(1.5)
-  end
-
-  def print_player_draws_card(drawn_card, player)
-    puts "#{player.name} draws a #{drawn_card.first} of #{drawn_card.last}."
-  end
-
   def print_welcome_message
     puts "Welcome to Twenty One!"
   end
 
   def print_game_rules
     puts RULES
-    press_any_key
-    clear
   end
 
   def print_dealers_turn
@@ -69,11 +61,20 @@ module Printable
   end
 
   def print_hit_or_stay
+    puts ""
     puts "Would you like to hit or stay? Type: (h)it or (s)tay"
+  end
+
+  def print_stay_message(player)
+    puts "#{player.name} decides to stay!"
   end
 
   def print_invalid_answer
     puts "Sorry, that's not a valid answer."
+  end
+
+  def print_player_draws_card(drawn_card, player)
+    puts "#{player.name} draws a #{drawn_card.first} of #{drawn_card.last}."
   end
 
   def print_winner(player=nil)
@@ -95,8 +96,9 @@ module Printable
   def print_cards_in_hand(player)
     puts "#{player.name} has"
     player.hand.each do |value, suit|
-      puts "#{value} of #{suit}"
+      puts "  #{value} of #{suit}"
     end
+    puts ""
   end
 
   # rubocop:disable Layout/LineLength
@@ -219,7 +221,6 @@ class Game
   def prepare_player
     clear
     ask_for_name
-    clear
     print_welcome_message
     print_game_rules
   end
@@ -278,7 +279,7 @@ class Game
   def player_full_sequence
     loop do
       answer = ask_hit_or_stay
-      break if STAY.include?(answer)
+      break print_stay_message(player) if STAY.include?(answer)
       if HIT.include?(answer)
         player_hit_sequence
         break if player_busted?(player)
@@ -299,6 +300,7 @@ class Game
     print_dealers_turn
     print_dealer_hand_reveal
     print_cards_in_hand(dealer)
+    print_hand_total(dealer)
     dealer_play_loop
   end
 
@@ -309,6 +311,7 @@ class Game
         dealer_hit_sequence
       else
         print_dealer_stays
+        dealer_hit_sequence
         break
       end
     end
@@ -323,6 +326,7 @@ class Game
     dealer.hand << hit
     print_player_draws_card(dealer.hand.last, dealer)
     print_cards_in_hand(dealer)
+    print_hand_total(dealer)
     dealer.calculate_hand_value
   end
 
