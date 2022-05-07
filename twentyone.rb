@@ -1,5 +1,37 @@
 require 'pry'
 
+RULES = <<HEREDOC
+
+Rules:
+
+  Player rules:
+    Player
+      - To win, your total card value needs to beat the dealer's total card value without going over 21.
+      - If your total card value goes over 21 then that is a bust and you lose the game.
+
+    Dealer
+      - The dealer must continue to hit until his total card value is at least 17 or above.
+      - The dealer wins by having a greater total card value than your total card value.
+
+  Card Values:
+    2,3,4,5,6,7,8,9, and 10 cards have the same value as the number on the card.
+    Jack, Queen, and King each have a value of 10.
+    Ace cards can be a 1 or 11. 
+    - An Ace's value is 1 if adding an Ace valued at 11 to your current total would cause you to bust.
+
+  Gameplay:
+    - First you and the dealer are dealt two cards each.  
+    - Look at your cards and decide if you want to hit or stay.
+      - Hit - you will draw one extra card and add it to your hand.
+        - You can continue to hit until you feel you have a total hand value that can win.
+      - Stay - you do not draw any cards and it is the dealer's turn.
+
+  Remember if you draw a card that causes your hand to go over 21, dealer wins!
+
+  Good luck! Have fun!
+
+HEREDOC
+
 module Printable
   def press_any_key
     puts "Press any key to continue."
@@ -10,8 +42,22 @@ module Printable
     system('clear')
   end
 
+  def wait
+    sleep(1.5)
+  end
+
   def print_player_draws_card(drawn_card, player)
     puts "#{player.name} draws a #{drawn_card.first} of #{drawn_card.last}."
+  end
+
+  def print_welcome_message
+    puts "Welcome to Twenty One!"
+  end
+
+  def print_game_rules
+    puts RULES
+    press_any_key
+    clear
   end
 
   def print_dealers_turn
@@ -107,8 +153,13 @@ class Player
 
   def calculate_hand_value
     @total_hand_value = 0
-    hand.each do |cards|
-      @total_hand_value += card_to_value(cards)
+    aces = hand.select { |card| card.first == "Ace" }
+    hand.each do |card_with_suit|
+      next if card_with_suit[0] == "Ace"
+      @total_hand_value += card_to_value(card_with_suit)
+    end
+    aces.each do |ace|
+      @total_hand_value += card_to_value(ace)
     end
   end
 
@@ -146,8 +197,9 @@ end
 
 class Game
   include Printable
-  HIT = ['hit', 'h']
-  STAY = ['stay', 's']
+  HIT = ['h', 'hit']
+  STAY = ['s', 'stay']
+
   attr_accessor :deck, :player, :dealer
 
   def initialize
@@ -157,15 +209,22 @@ class Game
   end
 
   def play
-    player.name = ask_for_name
+    prepare_player
     game_setup
     player_full_sequence
     dealer_full_sequence
     determine_winner
   end
 
-  def game_setup
+  def prepare_player
     clear
+    ask_for_name
+    clear
+    print_welcome_message
+    print_game_rules
+  end
+
+  def game_setup
     deck.shuffle_cards
     deal_two_cards_to_all_players
     player.calculate_hand_value
@@ -190,7 +249,7 @@ class Game
       break if answer.downcase =~ /[a-zA-Z]/
       print_invalid_answer
     end
-    answer
+    player.name = answer
   end
 
   def ask_hit_or_stay
@@ -198,7 +257,7 @@ class Game
     loop do
       print_hit_or_stay
       answer = gets.chomp
-      break if %w(h hit s stay).include?(answer)
+      break if (HIT + STAY).include?(answer)
       print_invalid_answer
     end
     answer
@@ -239,6 +298,7 @@ class Game
     return if player_busted?(player)
     print_dealers_turn
     print_dealer_hand_reveal
+    print_cards_in_hand(dealer)
     dealer_play_loop
   end
 
